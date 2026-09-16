@@ -18,12 +18,38 @@ function shuffle(arr) {
   return a;
 }
 
+// Fisher-Yates non-repeating shuffle deck:
+// Guarantees zero repeats within any training session of up to 462 questions!
+let deck = [];
+let deckCursor = 0;
+
+function replenishDeck() {
+  const indices = Array.from({ length: WORD_TRIADS.length }, (_, i) => i);
+  deck = shuffle(indices);
+  deckCursor = 0;
+}
+
+function getNextTriad() {
+  if (deck.length === 0 || deckCursor >= deck.length) {
+    replenishDeck();
+  }
+  const idx = deck[deckCursor++];
+  return WORD_TRIADS[idx];
+}
+
+/**
+ * Resets the deck cursor if needed between runs.
+ */
+export function resetWordMeaningDeck() {
+  replenishDeck();
+}
+
 /**
  * Generates a Word Meaning question.
  * @returns {import('./types.js').Question}
  */
 export function generateWordMeaningQuestion() {
-  const triad = WORD_TRIADS[randInt(0, WORD_TRIADS.length - 1)];
+  const triad = getNextTriad();
 
   const wordA = triad.pair[0];
   const wordB = triad.pair[1];

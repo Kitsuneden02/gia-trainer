@@ -589,19 +589,23 @@ select:focus {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px 20px;
+  padding: 14px 22px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  min-width: 72px;
+  gap: 10px;
+  min-width: 76px;
 }
 
 .letter-cell {
-  font-family: var(--mono);
-  font-size: 28px;
+  font-family: Arial, 'Helvetica Neue', Helvetica, 'Segoe UI', sans-serif;
+  font-size: 34px;
   font-weight: 700;
   color: var(--text);
+  line-height: 1;
+  text-align: center;
+  user-select: none;
+  letter-spacing: 0;
 }
 
 .letter-divider {

@@ -3,7 +3,8 @@
  * Construct: Rapid visual scanning and pattern matching across 4 letter pairs.
  */
 
-const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+// Uses high-distinctiveness alphabet omitting ambiguous sans-serif 'I' (to avoid I/l confusion)
+const ALPHABET = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -23,11 +24,13 @@ function pickDifferentLetter(exclude) {
 
 /**
  * Generates a Perceptual Speed question (4 letter pairs, count matching pairs).
+ * Alternates between:
+ *  - Lowercase top / Uppercase bottom (50%, as shown in GIA standard practice)
+ *  - Uppercase top / Lowercase bottom (50%)
  * @returns {import('./types.js').Question}
  */
 export function generatePerceptualQuestion() {
   // Target number of matching pairs (0 to 4)
-  // We use uniform random distribution for balanced training across all counts
   const matchCount = randInt(0, 4);
 
   // Determine which indices among 0..3 will be matches
@@ -39,19 +42,17 @@ export function generatePerceptualQuestion() {
   }
   const matchSet = new Set(indices.slice(0, matchCount));
 
+  // Case orientation alternation
+  const topIsUpper = Math.random() < 0.5;
+
   const pairs = [];
   for (let i = 0; i < 4; i++) {
-    const topChar = pickLetter();
+    const baseChar = pickLetter();
     const isMatch = matchSet.has(i);
+    const otherChar = isMatch ? baseChar : pickDifferentLetter(baseChar);
 
-    let bottomChar;
-    if (isMatch) {
-      // Same letter, lowercase
-      bottomChar = topChar.toLowerCase();
-    } else {
-      // Different letter, lowercase
-      bottomChar = pickDifferentLetter(topChar).toLowerCase();
-    }
+    const topChar = topIsUpper ? baseChar.toUpperCase() : baseChar.toLowerCase();
+    const bottomChar = topIsUpper ? otherChar.toLowerCase() : otherChar.toUpperCase();
 
     pairs.push({
       top: topChar,
@@ -76,7 +77,8 @@ export function generatePerceptualQuestion() {
     correctId: String(matchCount),
     data: {
       pairs,
-      matchCount
+      matchCount,
+      topIsUpper
     },
     metadata: {
       pairsSummary: pairs.map((p) => `${p.top}/${p.bottom}:${p.isMatch ? '1' : '0'}`).join(' ')

@@ -138,7 +138,18 @@ for (let i = 0; i < ITERATIONS; i++) {
   assert.strictEqual(q.correctId, q.data.distractor);
   assert(!q.data.pair.includes(q.data.distractor));
 }
-console.log('Word Meaning passed!');
+
+// Verify anti-repetition deck: 100 consecutive questions in a session must have 100 unique triads
+console.log('Testing Word Meaning anti-repetition deck (100 consecutive items)...');
+const sessionTriadKeys = new Set();
+for (let i = 0; i < 100; i++) {
+  const q = generateWordMeaningQuestion();
+  const key = q.data.pair.slice().sort().join('-') + '|' + q.data.distractor;
+  assert(!sessionTriadKeys.has(key), `Duplicate triad detected in 100 items: ${key}`);
+  sessionTriadKeys.add(key);
+}
+assert.strictEqual(sessionTriadKeys.size, 100);
+console.log('Word Meaning passed (zero repeats in 100 items)!');
 
 // 5. Spatial Visualisation Test
 console.log(`Testing Spatial Visualisation Standard GIA (${ITERATIONS} iterations)...`);
