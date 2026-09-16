@@ -8,8 +8,10 @@ import { I18N } from '../data/i18n.js';
 import { SessionEngine } from '../engine/session.js';
 import { KeyboardController } from '../engine/keyboard.js';
 import { QuestionRenderer } from './renderer.js';
+import { saveSessionResult, getPersonalBests, getSessionHistory, clearAllStorage } from '../engine/storage.js';
 
 // DOM Selectors
+const elBtnHistory = document.getElementById('btn-history');
 const elBtnMethodology = document.getElementById('btn-methodology');
 const elSetup = document.getElementById('panel-setup');
 const elSession = document.getElementById('panel-session');
@@ -26,6 +28,13 @@ const elSpatialModeGroup = document.getElementById('spatial-mode-group');
 const elSpatialModeLabel = document.getElementById('spatial-mode-label');
 const elSpatialModeSelect = document.getElementById('spatial-mode-select');
 
+const elTargetBenchmarkGroup = document.getElementById('target-benchmark-group');
+const elTargetBenchmarkLabel = document.getElementById('target-benchmark-label');
+const elTargetBenchmarkSelect = document.getElementById('target-benchmark-select');
+const elCustomQpmGroup = document.getElementById('custom-qpm-group');
+const elCustomQpmLabel = document.getElementById('custom-qpm-label');
+const elCustomQpmInput = document.getElementById('custom-qpm-input');
+
 const elBatteryName = document.getElementById('session-battery-name');
 const elKeyHelp = document.getElementById('session-key-help');
 const elClock = document.getElementById('session-clock');
@@ -40,6 +49,8 @@ const elHudTotal = document.getElementById('hud-total');
 const elHudQpm = document.getElementById('hud-qpm');
 const elHudStreak = document.getElementById('hud-streak');
 const elHudAvgRt = document.getElementById('hud-avg-rt');
+const elHudStatPacing = document.getElementById('hud-stat-pacing');
+const elHudPacing = document.getElementById('hud-pacing');
 
 const elHudLblScore = document.getElementById('hud-lbl-score');
 const elHudLblAccuracy = document.getElementById('hud-lbl-accuracy');
@@ -47,12 +58,36 @@ const elHudLblTotal = document.getElementById('hud-lbl-total');
 const elHudLblQpm = document.getElementById('hud-lbl-qpm');
 const elHudLblStreak = document.getElementById('hud-lbl-streak');
 const elHudLblLatency = document.getElementById('hud-lbl-latency');
+const elHudLblPacing = document.getElementById('hud-lbl-pacing');
 
-// Modal
+// Modals
 const elModal = document.getElementById('info-modal');
 const elModalTitle = document.getElementById('modal-title');
 const elModalBody = document.getElementById('modal-body');
 const elModalCloseBtn = document.getElementById('modal-close-btn');
+
+const elHistoryModal = document.getElementById('history-modal');
+const elHistoryModalTitle = document.getElementById('history-modal-title');
+const elHistoryModalBody = document.getElementById('history-modal-body');
+const elHistoryModalCloseBtn = document.getElementById('history-modal-close-btn');
+
+// Benchmark Profiles
+const BENCHMARKS = {
+  'none': { targetQpm: 0, targetAcc: 0 },
+  'standard': { targetQpm: 20, targetAcc: 85 },
+  'top-tier': { targetQpm: 28, targetAcc: 90 },
+  'elite': { targetQpm: 34, targetAcc: 95 }
+};
+
+function getActiveBenchmark() {
+  const val = elTargetBenchmarkSelect ? elTargetBenchmarkSelect.value : 'none';
+  if (val === 'custom') {
+    const customQpm = parseInt(elCustomQpmInput?.value, 10) || 28;
+    return { tier: 'custom', targetQpm: customQpm, targetAcc: 85 };
+  }
+  const preset = BENCHMARKS[val] || BENCHMARKS.none;
+  return { tier: val, ...preset };
+}
 
 // State
 let selectedBattery = BATTERIES.NUMBER_SPEED;
@@ -78,6 +113,7 @@ function setLanguage(lang) {
 
   // Header
   if (elBtnMethodology) elBtnMethodology.textContent = t.header.methodologyBtn;
+  if (elBtnHistory && t.setup.historyBtn) elBtnHistory.textContent = t.setup.historyBtn;
 
   // Setup panel
   if (elHeroTitle) elHeroTitle.textContent = t.setup.heroTitle;
@@ -111,6 +147,25 @@ function setLanguage(lang) {
     });
   }
 
+  // Re-populate target benchmark options while preserving selected value
+  if (elTargetBenchmarkLabel && t.setup.targetLabel) {
+    elTargetBenchmarkLabel.textContent = t.setup.targetLabel;
+  }
+  if (elTargetBenchmarkSelect && t.setup.targets) {
+    const currentTargetVal = elTargetBenchmarkSelect.value || 'none';
+    elTargetBenchmarkSelect.innerHTML = '';
+    t.setup.targets.forEach((tg) => {
+      const opt = document.createElement('option');
+      opt.value = tg.value;
+      opt.textContent = tg.label;
+      if (tg.value === currentTargetVal) opt.selected = true;
+      elTargetBenchmarkSelect.appendChild(opt);
+    });
+  }
+  if (elCustomQpmLabel && t.setup.customQpmLabel) {
+    elCustomQpmLabel.textContent = t.setup.customQpmLabel;
+  }
+
   // Session panel labels
   if (elEndBtn) elEndBtn.textContent = t.session.endBtn;
   if (elHudLblScore) elHudLblScore.textContent = t.session.hudScore;
@@ -119,9 +174,13 @@ function setLanguage(lang) {
   if (elHudLblQpm) elHudLblQpm.textContent = t.session.hudQpm;
   if (elHudLblStreak) elHudLblStreak.textContent = t.session.hudStreak;
   if (elHudLblLatency) elHudLblLatency.textContent = t.session.hudAvgRt;
+  if (elHudLblPacing && t.session.hudPacing) elHudLblPacing.textContent = t.session.hudPacing;
 
   // Modal content
   renderModalContent(t.modal);
+  if (elHistoryModalTitle && t.summary.historyModalTitle) {
+    elHistoryModalTitle.textContent = t.summary.historyModalTitle;
+  }
 
   // Cards and hint
   renderBatteryCards();
@@ -336,6 +395,15 @@ function resetHudStats() {
   elHudQpm.textContent = '0';
   elHudStreak.textContent = '0';
   elHudAvgRt.textContent = '–';
+
+  const bench = getActiveBenchmark();
+  if (bench && bench.targetQpm > 0 && elHudStatPacing) {
+    elHudStatPacing.style.display = 'block';
+    elHudPacing.textContent = `0 / ${bench.targetQpm}`;
+    elHudPacing.style.color = 'var(--text)';
+  } else if (elHudStatPacing) {
+    elHudStatPacing.style.display = 'none';
+  }
 }
 
 function updateHudStats(stats) {
@@ -345,6 +413,15 @@ function updateHudStats(stats) {
   elHudQpm.textContent = stats.throughputQpm;
   elHudStreak.textContent = stats.streak;
   elHudAvgRt.textContent = stats.avgRtMs > 0 ? `${stats.avgRtMs}ms` : '–';
+
+  const bench = getActiveBenchmark();
+  if (bench && bench.targetQpm > 0 && elHudStatPacing) {
+    elHudStatPacing.style.display = 'block';
+    const diff = stats.throughputQpm - bench.targetQpm;
+    const symbol = diff >= 0 ? '▲' : '▼';
+    const color = diff >= 0 ? 'var(--green)' : 'var(--amber)';
+    elHudPacing.innerHTML = `<span style="color:${color}">${stats.throughputQpm}/${bench.targetQpm} ${symbol}</span>`;
+  }
 }
 
 function handleSessionFinish(summary) {
@@ -415,11 +492,61 @@ function renderSummaryReport(summary) {
   const activeBatteryInfo = t.batteries[battery];
   const batteryDisplayName = activeBatteryInfo ? activeBatteryInfo.name : battery;
 
+  // Evaluate Benchmark Target
+  const bench = getActiveBenchmark();
+  const targetMet = bench && bench.targetQpm > 0 ? (stats.throughputQpm >= bench.targetQpm && stats.accuracy >= bench.targetAcc) : false;
+
+  // Persist session result to localStorage and determine if it's a new PB
+  const { isNewPb, previousPb } = saveSessionResult({
+    battery,
+    durationSec: summary.durationSec,
+    elapsedSec: summary.totalElapsedSec,
+    netScore: stats.netScore,
+    correct: stats.correct,
+    total: stats.total,
+    accuracy: stats.accuracy,
+    throughputQpm: stats.throughputQpm,
+    avgRtMs: stats.avgRtMs,
+    bestStreak: stats.bestStreak,
+    targetTier: bench ? bench.tier : 'none',
+    targetMet
+  });
+
+  let pbBadgeHTML = '';
+  if (isNewPb) {
+    pbBadgeHTML = `<div class="pb-badge">${sumT.newPbBadge} ${previousPb !== null ? `(${sumT.previousPb(previousPb)})` : ''}</div>`;
+  }
+
+  let targetCardHTML = '';
+  if (bench && bench.targetQpm > 0) {
+    const gap = stats.throughputQpm - bench.targetQpm;
+    const isSuccess = targetMet;
+    const badgeClass = isSuccess ? 'met' : 'missed';
+    const badgeText = isSuccess ? sumT.targetAchieved : sumT.targetMissed;
+    const gapText = sumT.targetGap(gap);
+    const accWarning = (!isSuccess && stats.accuracy < bench.targetAcc) ? `<br><small style="color:var(--red); font-weight:600;">${sumT.targetAccuracyWarning(stats.accuracy, bench.targetAcc)}</small>` : '';
+
+    targetCardHTML = `
+      <div class="target-card ${badgeClass}">
+        <div class="target-card-info">
+          <h4>${sumT.targetGoalTitle}: ${bench.targetQpm} Net QPM (≥${bench.targetAcc}% Acc)</h4>
+          <p>${gapText} • Actual: ${stats.throughputQpm} QPM (${stats.accuracy}%)${accWarning}</p>
+        </div>
+        <div class="target-badge ${badgeClass}">
+          ${badgeText}
+        </div>
+      </div>
+    `;
+  }
+
   elSummary.innerHTML = `
     <div class="summary-header">
       <h2>${sumT.title}</h2>
       <p>${sumT.meta(batteryDisplayName, summary.totalElapsedSec)}</p>
+      ${pbBadgeHTML}
     </div>
+
+    ${targetCardHTML}
 
     <div class="summary-score-hero">
       <div class="hero-score-val">${stats.netScore.toFixed(1)}</div>
@@ -452,15 +579,142 @@ function renderSummaryReport(summary) {
       ${advice}
     </div>
 
-    <button type="button" class="btn-primary" id="btn-restart">
-      ${sumT.restartBtn}
-    </button>
+    <div class="summary-actions">
+      <button type="button" class="btn-primary" id="btn-repeat">
+        ${sumT.repeatBtn}
+      </button>
+      <button type="button" class="btn-secondary" id="btn-home">
+        ${sumT.homeBtn}
+      </button>
+    </div>
   `;
 
-  document.getElementById('btn-restart').onclick = () => {
+  document.getElementById('btn-repeat').onclick = () => {
+    startSession();
+  };
+
+  document.getElementById('btn-home').onclick = () => {
     elSummary.style.display = 'none';
     elSetup.style.display = 'block';
   };
+}
+
+/**
+ * Renders the History & Personal Bests dialog.
+ */
+function openHistoryModal() {
+  const t = I18N[currentLang] || I18N.en;
+  const sumT = t.summary;
+  const pbs = getPersonalBests();
+  const history = getSessionHistory();
+
+  const batteries = [
+    BATTERIES.NUMBER_SPEED,
+    BATTERIES.PERCEPTUAL,
+    BATTERIES.REASONING,
+    BATTERIES.WORD_MEANING,
+    BATTERIES.SPATIAL,
+    'mixed'
+  ];
+
+  const pbRows = batteries.map((batKey) => {
+    const bInfo = t.batteries[batKey];
+    const name = bInfo ? (bInfo.shortName || bInfo.name) : batKey;
+    const pb = pbs[batKey];
+    if (!pb) {
+      return `<tr><td><strong>${name}</strong></td><td colspan="4" style="color:var(--text-dim); text-align:center;">–</td></tr>`;
+    }
+    const d = new Date(pb.timestamp).toLocaleDateString();
+    return `
+      <tr>
+        <td><strong>${name}</strong></td>
+        <td><span style="color:var(--accent); font-weight:700;">${pb.netScore}</span></td>
+        <td>${pb.throughputQpm} QPM</td>
+        <td>${pb.accuracy}%</td>
+        <td style="font-size:12px; color:var(--text-muted);">${d}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const pbsHTML = `
+    <h4>${currentLang === 'es' ? 'Récords Personales (Mejor Puntaje Neto)' : 'Personal Bests (Highest Net Score)'}</h4>
+    <div class="breakdown-table-wrapper">
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>${sumT.tableBattery}</th>
+            <th>${sumT.tableNetScore}</th>
+            <th>QPM</th>
+            <th>${sumT.tableAccuracy}</th>
+            <th>${currentLang === 'es' ? 'Fecha' : 'Date'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pbRows}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  let historyHTML = '';
+  if (history.length === 0) {
+    historyHTML = `<p style="color:var(--text-muted); padding:16px 0; text-align:center;">${sumT.historyEmpty}</p>`;
+  } else {
+    const histRows = history.slice(0, 15).map((item) => {
+      const bInfo = t.batteries[item.battery];
+      const name = bInfo ? (bInfo.shortName || bInfo.name) : item.battery;
+      const d = new Date(item.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+      const targetBadge = item.targetMet ? '<span style="color:var(--green); font-weight:700;">✓</span>' : '';
+      return `
+        <tr>
+          <td>${name}</td>
+          <td><strong>${item.netScore}</strong></td>
+          <td>${item.accuracy}%</td>
+          <td>${item.throughputQpm}</td>
+          <td style="font-size:12px; color:var(--text-muted);">${d} ${targetBadge}</td>
+        </tr>
+      `;
+    }).join('');
+
+    historyHTML = `
+      <h4 style="margin-top:24px;">${currentLang === 'es' ? 'Sesiones Recientes' : 'Recent Sessions'} (${history.length})</h4>
+      <div class="breakdown-table-wrapper">
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>${sumT.tableBattery}</th>
+              <th>${sumT.tableNetScore}</th>
+              <th>${sumT.tableAccuracy}</th>
+              <th>QPM</th>
+              <th>${currentLang === 'es' ? 'Fecha' : 'Date'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${histRows}
+          </tbody>
+        </table>
+      </div>
+      <div style="margin-top:16px; text-align:right;">
+        <button type="button" class="btn-secondary" id="btn-clear-history" style="display:inline-flex; width:auto; font-size:12px; padding:6px 14px;">
+          ${sumT.clearHistoryBtn}
+        </button>
+      </div>
+    `;
+  }
+
+  elHistoryModalBody.innerHTML = `${pbsHTML}${historyHTML}`;
+
+  const btnClear = document.getElementById('btn-clear-history');
+  if (btnClear) {
+    btnClear.onclick = () => {
+      if (window.confirm(sumT.clearHistoryConfirm)) {
+        clearAllStorage();
+        openHistoryModal();
+      }
+    };
+  }
+
+  elHistoryModal.classList.add('open');
 }
 
 // Language Switcher buttons binding
@@ -478,7 +732,28 @@ elEndBtn.onclick = () => {
   if (currentEngine) currentEngine.finish('manual');
 };
 
-// Modal events
+if (elTargetBenchmarkSelect) {
+  elTargetBenchmarkSelect.onchange = () => {
+    if (elCustomQpmGroup) {
+      elCustomQpmGroup.style.display = elTargetBenchmarkSelect.value === 'custom' ? 'flex' : 'none';
+    }
+  };
+}
+
+// History & Records Modal events
+if (elBtnHistory) {
+  elBtnHistory.onclick = openHistoryModal;
+}
+if (elHistoryModalCloseBtn) {
+  elHistoryModalCloseBtn.onclick = () => elHistoryModal.classList.remove('open');
+}
+if (elHistoryModal) {
+  elHistoryModal.onclick = (e) => {
+    if (e.target === elHistoryModal) elHistoryModal.classList.remove('open');
+  };
+}
+
+// Methodology Modal events
 if (elBtnMethodology) {
   elBtnMethodology.onclick = () => elModal.classList.add('open');
 }
@@ -493,3 +768,4 @@ if (elModal) {
 
 // Initialize with default language (EN)
 setLanguage('en');
+

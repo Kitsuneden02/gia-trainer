@@ -40,6 +40,9 @@
             <span>ES</span>
           </button>
         </div>
+        <button type="button" class="icon-btn" id="btn-history" title="Training Records & History">
+          History
+        </button>
         <button type="button" class="icon-btn" id="btn-methodology" title="GIA Methodology & Rules">
           Methodology
         </button>
@@ -78,6 +81,20 @@
             <option value="standard" selected>GIA Standard (Capital Letters, 90°)</option>
             <option value="challenge">Challenge Mode (Polyforms, 45°)</option>
           </select>
+        </div>
+        <div class="setting-group" id="target-benchmark-group">
+          <label for="target-benchmark-select" id="target-benchmark-label">Target Benchmark</label>
+          <select id="target-benchmark-select">
+            <option value="none" selected>No Target (Open practice)</option>
+            <option value="standard">Standard Norm (50th %tile • 20 Net QPM, ≥85% Acc)</option>
+            <option value="top-tier">Top Tier / Competitive (75th+ %tile • 28 Net QPM, ≥90% Acc)</option>
+            <option value="elite">Elite Performers (86th+ %tile • 34 Net QPM, ≥95% Acc)</option>
+            <option value="custom">Custom Target...</option>
+          </select>
+        </div>
+        <div class="setting-group" id="custom-qpm-group" style="display: none; max-width: 140px;">
+          <label for="custom-qpm-input" id="custom-qpm-label">Target QPM</label>
+          <input type="number" id="custom-qpm-input" min="5" max="60" value="28" style="background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 10px; font-family:var(--sans); font-size:14px; outline:none;">
         </div>
       </div>
 
@@ -139,6 +156,10 @@
           <div class="val" id="hud-avg-rt">–</div>
           <div class="lbl" id="hud-lbl-latency">Latency</div>
         </div>
+        <div class="hud-stat" id="hud-stat-pacing" style="display: none;">
+          <div class="val" id="hud-pacing">–</div>
+          <div class="lbl" id="hud-lbl-pacing">Pacing</div>
+        </div>
       </div>
     </div>
 
@@ -156,6 +177,19 @@
         <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body" id="modal-body">
+        <!-- Injected dynamically by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- History & Personal Records Modal Dialog -->
+  <div class="modal-backdrop" id="history-modal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <h3 id="history-modal-title">Training History & Personal Bests</h3>
+        <button type="button" class="modal-close-btn" id="history-modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="history-modal-body">
         <!-- Injected dynamically by app.js -->
       </div>
     </div>

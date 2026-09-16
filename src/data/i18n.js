@@ -29,13 +29,23 @@ export const I18N = {
       spatialModes: [
         { value: 'standard', label: 'GIA Standard (Capital Letters, 90°)' },
         { value: 'challenge', label: 'Challenge Mode (Polyforms, 45°)' }
-      ]
+      ],
+      targetLabel: 'Target Benchmark',
+      targets: [
+        { value: 'none', label: 'No Target (Open practice)' },
+        { value: 'standard', label: 'Standard Norm (50th %tile • 20 Net QPM, ≥85% Acc)' },
+        { value: 'top-tier', label: 'Top Tier / Competitive (75th+ %tile • 28 Net QPM, ≥90% Acc)' },
+        { value: 'elite', label: 'Elite Performers (86th+ %tile • 34 Net QPM, ≥95% Acc)' },
+        { value: 'custom', label: 'Custom Target...' }
+      ],
+      customQpmLabel: 'Target Net QPM (Items/min)',
+      historyBtn: 'Records & History'
     },
     batteries: {
       'number-speed': {
         name: 'Number Speed & Accuracy',
         shortName: 'Number Speed',
-        tag: '|mid - min| vs |max - mid|',
+        tag: 'Furthest Value',
         desc: 'Compare numerical distances to identify the furthest extreme.',
         hintDesc: 'Calculate distances to the median (|mid - min| vs |max - mid|).',
         keys: 'Keys 1, 2, 3 or ←, ↓, →'
@@ -89,6 +99,7 @@ export const I18N = {
       hudQpm: 'Items / min',
       hudStreak: 'Streak',
       hudAvgRt: 'Latency',
+      hudPacing: 'Pacing',
       premiseTag: 'Phase 1: Memorize the statement',
       premiseSub: 'The statement will disappear when you click continue.',
       premiseBtn: 'Continue <kbd>Space</kbd>',
@@ -109,7 +120,19 @@ export const I18N = {
       tableAccuracy: 'Accuracy',
       tableAvgRt: 'Avg Latency',
       tableNetScore: 'Net Score',
-      restartBtn: 'Start Another Training Session',
+      repeatBtn: 'Repeat Exercise',
+      homeBtn: 'Back to Setup',
+      targetGoalTitle: 'Target Benchmark Evaluation',
+      targetAchieved: 'Benchmark Achieved! 🎯',
+      targetMissed: 'Below Target Benchmark',
+      targetGap: (gap) => `Pacing gap: ${gap > 0 ? `+${gap}` : gap} QPM`,
+      targetAccuracyWarning: (acc, req) => `Accuracy (${acc}%) fell short of benchmark (${req}%).`,
+      newPbBadge: '🏆 New Personal Best!',
+      previousPb: (score) => `Previous best: ${score} pts`,
+      historyModalTitle: 'Training History & Personal Bests',
+      historyEmpty: 'No training sessions recorded yet.',
+      clearHistoryBtn: 'Clear History',
+      clearHistoryConfirm: 'Are you sure you want to clear all training history and personal bests?',
       adviceExcellent: (acc) => `<strong>Outstanding accuracy (${acc}%)!</strong> Your error management is formidable. In the official GIA you can push 10-15% more speed without fearing the penalty.`,
       adviceBalanced: (acc, qpm, rt) => `<strong>Solid balance (${acc}% accuracy).</strong> You maintain a competitive throughput (${qpm} items/min). Focus on instant pattern recognition to reduce latency (${rt} ms).`,
       adviceCaution: (acc) => `<strong>Caution with the guessing penalty (-0.5 pts per error).</strong> Your accuracy was ${acc}%. Remember that in the GIA, blind guessing heavily penalizes your net standing. Slow down slightly to verify each item.`
@@ -158,13 +181,23 @@ export const I18N = {
       spatialModes: [
         { value: 'standard', label: 'Estándar GIA (Letras mayúsculas, 90°)' },
         { value: 'challenge', label: 'Modo Reto (Poliformas complejas, 45°)' }
-      ]
+      ],
+      targetLabel: 'Meta de Rendimiento',
+      targets: [
+        { value: 'none', label: 'Sin Meta (Práctica libre)' },
+        { value: 'standard', label: 'Estándar Base (Percentil 50 • 20 QPM Neto, ≥85% Prec)' },
+        { value: 'top-tier', label: 'Competitivo / Nivel Alto (Percentil 75+ • 28 QPM Neto, ≥90% Prec)' },
+        { value: 'elite', label: 'Rendimiento Élite (Percentil 86+ • 34 QPM Neto, ≥95% Prec)' },
+        { value: 'custom', label: 'Meta Personalizada...' }
+      ],
+      customQpmLabel: 'QPM Neto Objetivo (Ítems/min)',
+      historyBtn: 'Récords e Historial'
     },
     batteries: {
       'number-speed': {
         name: 'Velocidad y Precisión Numérica',
         shortName: 'Velocidad Numérica',
-        tag: '|mid - min| vs |max - mid|',
+        tag: 'Valor Extremo',
         desc: 'Compara distancias respecto al valor central de 3 números.',
         hintDesc: 'Cálculo de distancias al número central (|mid - min| vs |max - mid|).',
         keys: 'Teclas 1, 2, 3 o ←, ↓, →'
@@ -218,6 +251,7 @@ export const I18N = {
       hudQpm: 'Preg / min',
       hudStreak: 'Racha',
       hudAvgRt: 'Latencia',
+      hudPacing: 'Ritmo',
       premiseTag: 'Fase 1: Memoriza la afirmación',
       premiseSub: 'La afirmación desaparecerá cuando pulses continuar.',
       premiseBtn: 'Continuar <kbd>Espacio</kbd>',
@@ -238,7 +272,19 @@ export const I18N = {
       tableAccuracy: 'Precisión',
       tableAvgRt: 'Tiempo Promedio',
       tableNetScore: 'Score Neto',
-      restartBtn: 'Iniciar Otra Sesión de Entrenamiento',
+      repeatBtn: 'Repetir Ejercicio',
+      homeBtn: 'Volver al Inicio',
+      targetGoalTitle: 'Evaluación de Meta de Rendimiento',
+      targetAchieved: '¡Meta Alcanzada! 🎯',
+      targetMissed: 'Por debajo del objetivo',
+      targetGap: (gap) => `Brecha de ritmo: ${gap > 0 ? `+${gap}` : gap} QPM`,
+      targetAccuracyWarning: (acc, req) => `La precisión (${acc}%) no alcanzó el requisito (${req}%).`,
+      newPbBadge: '🏆 ¡Nuevo Récord Personal!',
+      previousPb: (score) => `Récord anterior: ${score} pts`,
+      historyModalTitle: 'Historial de Entrenamiento y Récords Personales',
+      historyEmpty: 'Aún no hay sesiones registradas.',
+      clearHistoryBtn: 'Borrar Historial',
+      clearHistoryConfirm: '¿Estás seguro de que deseas borrar todo el historial y récords personales?',
       adviceExcellent: (acc) => `<strong>¡Excelente precisión (${acc}%)!</strong> Tu control de errores es formidable. En el GIA oficial puedes empujar un 10-15% más de velocidad sin temer a la penalización.`,
       adviceBalanced: (acc, qpm, rt) => `<strong>Buen balance (${acc}% de precisión).</strong> Mantienes un throughput competitivo (${qpm} preg/min). Trabaja en reconocer patrones de forma automática para reducir la latencia (${rt} ms).`,
       adviceCaution: (acc) => `<strong>Precaución con la penalización (-0.5 pts por fallo).</strong> Tu precisión fue del ${acc}%. Recuerda que en el GIA las conjeturas al azar destruyen tu puntaje neto. Disminuye ligeramente la prisa mecánica y asegura la confirmación mental de cada ítem.`

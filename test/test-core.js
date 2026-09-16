@@ -153,4 +153,70 @@ for (let i = 0; i < 100; i++) {
 }
 console.log('Mixed Battery generator passed!');
 
-console.log('ALL 5 BATERIES PASSED 1,000 ITERATIONS RIGOROUSLY WITH 0 FAILURES!');
+// 7. Storage Engine & Metrics Persistence Test
+console.log('Testing Storage Engine (localStorage persistence & personal bests)...');
+const memoryStorage = {};
+globalThis.window = {
+  localStorage: {
+    getItem: (k) => (k in memoryStorage ? memoryStorage[k] : null),
+    setItem: (k, v) => { memoryStorage[k] = String(v); },
+    removeItem: (k) => { delete memoryStorage[k]; }
+  }
+};
+
+const { saveSessionResult, getPersonalBests, getSessionHistory, clearAllStorage } = await import('../src/engine/storage.js');
+
+// Test first session
+const res1 = saveSessionResult({
+  battery: 'number-speed',
+  durationSec: 150,
+  elapsedSec: 150,
+  netScore: 35.5,
+  correct: 38,
+  total: 43,
+  accuracy: 88,
+  throughputQpm: 15.2,
+  avgRtMs: 2500,
+  bestStreak: 12,
+  targetTier: 'standard',
+  targetMet: false
+});
+
+assert.strictEqual(res1.isNewPb, true);
+let pbs = getPersonalBests();
+assert.strictEqual(pbs['number-speed'].netScore, 35.5);
+
+// Test lower session (should not be new PB)
+const res2 = saveSessionResult({
+  battery: 'number-speed',
+  netScore: 28.0,
+  accuracy: 80,
+  throughputQpm: 12.0
+});
+assert.strictEqual(res2.isNewPb, false);
+pbs = getPersonalBests();
+assert.strictEqual(pbs['number-speed'].netScore, 35.5);
+
+// Test higher session (should be new PB)
+const res3 = saveSessionResult({
+  battery: 'number-speed',
+  netScore: 42.0,
+  accuracy: 94,
+  throughputQpm: 18.5
+});
+assert.strictEqual(res3.isNewPb, true);
+pbs = getPersonalBests();
+assert.strictEqual(pbs['number-speed'].netScore, 42.0);
+
+// Test history
+const history = getSessionHistory();
+assert.strictEqual(history.length, 3);
+assert.strictEqual(history[0].netScore, 42.0);
+
+// Test clear
+clearAllStorage();
+assert.strictEqual(getSessionHistory().length, 0);
+assert.deepStrictEqual(getPersonalBests(), {});
+console.log('Storage Engine passed!');
+
+console.log('ALL 5 BATTERIES + STORAGE ENGINE PASSED RIGOROUSLY WITH 0 FAILURES!');
