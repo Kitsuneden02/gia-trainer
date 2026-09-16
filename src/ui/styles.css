@@ -598,7 +598,7 @@ select:focus {
 }
 
 .letter-cell {
-  font-family: Arial, 'Helvetica Neue', Helvetica, 'Segoe UI', sans-serif;
+  font-family: 'Atkinson Hyperlegible', Verdana, 'Trebuchet MS', sans-serif;
   font-size: 34px;
   font-weight: 700;
   color: var(--text);

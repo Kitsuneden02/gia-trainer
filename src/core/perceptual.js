@@ -3,8 +3,7 @@
  * Construct: Rapid visual scanning and pattern matching across 4 letter pairs.
  */
 
-// Uses high-distinctiveness alphabet omitting ambiguous sans-serif 'I' (to avoid I/l confusion)
-const ALPHABET = 'ABCDEFGHJKLMNOPQRSTUVWXYZ';
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -16,7 +15,8 @@ function pickLetter() {
 
 function pickDifferentLetter(exclude) {
   let l = pickLetter();
-  while (l === exclude) {
+  // Ensure the different letter is not the same, and avoid confusing pairs (e.g. I vs L)
+  while (l === exclude || (exclude === 'I' && l === 'L') || (exclude === 'L' && l === 'I')) {
     l = pickLetter();
   }
   return l;
