@@ -523,15 +523,16 @@ function renderSummaryReport(summary) {
     const gap = Math.round(rawGap * 10) / 10;
     const isSuccess = targetMet;
     const badgeClass = isSuccess ? 'met' : 'missed';
-    const badgeText = isSuccess ? sumT.targetAchieved : sumT.targetMissed;
     const gapText = sumT.targetGap(gap);
+    const actualText = sumT.targetActual ? sumT.targetActual(stats.throughputQpm, stats.accuracy) : `Actual: ${stats.throughputQpm} QPM (${stats.accuracy}%)`;
+    const specText = sumT.targetSpec ? sumT.targetSpec(bench.targetQpm, bench.targetAcc) : `${bench.targetQpm} Net QPM (≥${bench.targetAcc}% Acc)`;
     const accWarning = (!isSuccess && stats.accuracy < bench.targetAcc) ? `<br><small style="color:var(--red); font-weight:600;">${sumT.targetAccuracyWarning(stats.accuracy, bench.targetAcc)}</small>` : '';
 
     targetCardHTML = `
       <div class="target-card ${badgeClass}">
         <div class="target-card-info">
-          <h4>${sumT.targetGoalTitle}: ${bench.targetQpm} Net QPM (≥${bench.targetAcc}% Acc)</h4>
-          <p>${gapText} • Actual: ${stats.throughputQpm} QPM (${stats.accuracy}%)${accWarning}</p>
+          <h4>${sumT.targetGoalTitle}: ${specText}</h4>
+          <p><span class="target-gap-val ${gap >= 0 ? 'above' : 'below'}">${gapText}</span> • ${actualText}${accWarning}</p>
         </div>
         <div class="target-badge ${badgeClass}">
           ${badgeText}

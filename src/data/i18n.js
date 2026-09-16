@@ -123,9 +123,16 @@ export const I18N = {
       repeatBtn: 'Repeat Exercise',
       homeBtn: 'Back to Setup',
       targetGoalTitle: 'Target Benchmark Evaluation',
+      targetSpec: (qpm, acc) => `${qpm} Net QPM (≥${acc}% Acc)`,
       targetAchieved: 'Benchmark Achieved! 🎯',
-      targetMissed: 'Below Target Benchmark',
-      targetGap: (gap) => `Pacing gap: ${Number(gap) > 0 ? '+' : ''}${Number(gap).toFixed(1)} QPM`,
+      targetMissed: 'Benchmark Not Met',
+      targetGap: (gap) => {
+        const num = Number(gap);
+        if (num < 0) return `Difference: ${Math.abs(num).toFixed(1)} QPM below target`;
+        if (num > 0) return `Difference: +${num.toFixed(1)} QPM above target`;
+        return 'Difference: Exactly on target pace';
+      },
+      targetActual: (qpm, acc) => `Achieved pace: ${qpm} QPM (${acc}% accuracy)`,
       targetAccuracyWarning: (acc, req) => `Accuracy (${acc}%) fell short of benchmark (${req}%).`,
       newPbBadge: '🏆 New Personal Best!',
       previousPb: (score) => `Previous best: ${score} pts`,
@@ -275,9 +282,16 @@ export const I18N = {
       repeatBtn: 'Repetir Ejercicio',
       homeBtn: 'Volver al Inicio',
       targetGoalTitle: 'Evaluación de Meta de Rendimiento',
+      targetSpec: (qpm, acc) => `${qpm} QPM Neto (≥${acc}% Precisión)`,
       targetAchieved: '¡Meta Alcanzada! 🎯',
-      targetMissed: 'Por debajo del objetivo',
-      targetGap: (gap) => `Brecha de ritmo: ${Number(gap) > 0 ? '+' : ''}${Number(gap).toFixed(1)} QPM`,
+      targetMissed: 'Meta no alcanzada',
+      targetGap: (gap) => {
+        const num = Number(gap);
+        if (num < 0) return `Diferencia: ${Math.abs(num).toFixed(1)} QPM por debajo de la meta`;
+        if (num > 0) return `Diferencia: +${num.toFixed(1)} QPM por encima de la meta`;
+        return 'Diferencia: Ritmo exacto a la meta';
+      },
+      targetActual: (qpm, acc) => `Ritmo obtenido: ${qpm} QPM (${acc}% precisión)`,
       targetAccuracyWarning: (acc, req) => `La precisión (${acc}%) no alcanzó el requisito (${req}%).`,
       newPbBadge: '🏆 ¡Nuevo Récord Personal!',
       previousPb: (score) => `Récord anterior: ${score} pts`,
