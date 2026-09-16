@@ -194,7 +194,7 @@ export const COMPARATIVE_DIMENSIONS = [
     posBase: 'brave',
     posComp: 'braver',
     negBase: 'timid',
-    negComp: 'más tímido',
+    negComp: 'more timid',
     noun: 'courage',
     es: {
       m: {

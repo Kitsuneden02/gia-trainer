@@ -75,6 +75,12 @@ for (let i = 0; i < ITERATIONS; i++) {
   assert(!qEn.premise.includes('as taller as'), `Ungrammatical EN premise: ${qEn.premise}`);
   assert(!qEn.premise.includes('as shorter as'), `Ungrammatical EN premise: ${qEn.premise}`);
 
+  // English purity check: should never contain Spanish words
+  assert(!qEn.premise.includes('más'), `Spanish word 'más' in EN premise: ${qEn.premise}`);
+  assert(!qEn.premise.includes('tímido'), `Spanish word 'tímido' in EN premise: ${qEn.premise}`);
+  assert(!qEn.prompt.includes('más'), `Spanish word 'más' in EN prompt: ${qEn.prompt}`);
+  assert(!qEn.prompt.includes('Quién'), `Spanish word 'Quién' in EN prompt: ${qEn.prompt}`);
+
   const { personA: pAEn, personB: pBEn, aIsGreaterThanB: aGtBEn, askPositive: askPosEn } = qEn.data;
   const expectedWinnerEn = askPosEn
     ? (aGtBEn ? pAEn : pBEn)
