@@ -45,7 +45,7 @@ export function generateQuestion(battery, options = {}) {
     case BATTERIES.WORD_MEANING:
       return generateWordMeaningQuestion();
     case BATTERIES.SPATIAL:
-      return generateSpatialQuestion();
+      return generateSpatialQuestion(options);
     default:
       throw new Error(`Unknown battery: ${battery}`);
   }

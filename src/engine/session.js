@@ -17,6 +17,7 @@ export class SessionEngine {
     this.battery = config.battery || 'reasoning';
     this.durationSec = config.durationSec !== undefined ? config.durationSec : 150;
     this.lang = config.lang || 'en';
+    this.spatialMode = config.spatialMode || 'standard';
     this.callbacks = config.callbacks || {};
 
     this.status = 'idle'; // 'idle' | 'running' | 'finished'
@@ -121,7 +122,10 @@ export class SessionEngine {
   nextQuestion() {
     if (this.status !== 'running') return;
 
-    this.currentQuestion = generateQuestion(this.battery, { lang: this.lang });
+    this.currentQuestion = generateQuestion(this.battery, {
+      lang: this.lang,
+      spatialMode: this.spatialMode
+    });
 
     if (this.currentQuestion.hasTwoPhases) {
       // Phase 1: Read and memorize the premise

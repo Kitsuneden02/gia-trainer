@@ -24,7 +24,12 @@ export const I18N = {
       startMixedBtn: 'Start Full GIA Battery',
       mixedHintTitle: 'Full Battery:',
       mixedHintDesc: 'Alternating questions across all 5 sections. Recommended 2.5 to 5 min block.',
-      keysLabel: 'Keys'
+      keysLabel: 'Keys',
+      spatialModeLabel: 'Spatial Mode',
+      spatialModes: [
+        { value: 'standard', label: 'GIA Standard (Capital Letters, 90°)' },
+        { value: 'challenge', label: 'Challenge Mode (Polyforms, 45°)' }
+      ]
     },
     batteries: {
       'number-speed': {
@@ -63,8 +68,8 @@ export const I18N = {
         name: 'Spatial Visualisation',
         shortName: 'Spatial Visualisation',
         tag: '0, 1, 2',
-        desc: 'Evaluate 2 boxes for valid planar rotations vs. reflections.',
-        hintDesc: 'Discriminate 2D planar rotation vs. mirror reflection across 2 boxes.',
+        desc: 'Evaluate 2 boxes for valid planar 90° letter rotations vs. reflections.',
+        hintDesc: 'Discriminate 2D planar 90° letter rotations vs. mirror reflections across 2 boxes.',
         keys: 'Keys 0, 1, 2'
       },
       'mixed': {
@@ -121,7 +126,7 @@ export const I18N = {
         '<strong>Perceptual Speed:</strong> A matrix of 4 letter pairs is shown. Count how many pairs contain the exact same character (case-insensitive: E/e counts, Q/y does not). Options: 0 to 4.',
         '<strong>Reasoning:</strong> In Phase 1, study a relational comparative premise (e.g. <em>"Tom is heavier than Fred"</em>). After memorizing and pressing Space, the statement vanishes and a direct question appears (e.g. <em>"Who is heavier?"</em>). Measures verbal working memory and transitive deduction.',
         '<strong>Word Meaning:</strong> Three English words appear. Two share a definitive semantic link (synonyms or antonyms) and the third is the intruder (Odd-One-Out). Select the intruder.',
-        '<strong>Spatial Visualisation:</strong> Evaluate 2 boxes containing asymmetric 2D glyphs. Count how many boxes (0, 1, or 2) contain legitimate planar rotations rather than mirror reflections.'
+        '<strong>Spatial Visualisation:</strong> Two boxes display asymmetric capital letters (or polyforms in Challenge mode). Count how many boxes (0, 1, or 2) contain legitimate planar 90° rotations rather than mirror reflections.'
       ],
       ergonomicsTitle: 'Ergonomic Keyboard Mapping',
       ergonomicsDesc: 'To eliminate physical mouse latency, all questions respond directly to numeric keys (top row or numpad) and arrow keys.'
@@ -148,7 +153,12 @@ export const I18N = {
       startMixedBtn: 'Comenzar Entrenamiento Mixto',
       mixedHintTitle: 'Batería Combinada:',
       mixedHintDesc: 'Se alternarán preguntas de las 5 secciones. Recomendado bloque de 2.5 a 5 minutos.',
-      keysLabel: 'Atajos'
+      keysLabel: 'Atajos',
+      spatialModeLabel: 'Modo Espacial',
+      spatialModes: [
+        { value: 'standard', label: 'Estándar GIA (Letras mayúsculas, 90°)' },
+        { value: 'challenge', label: 'Modo Reto (Poliformas complejas, 45°)' }
+      ]
     },
     batteries: {
       'number-speed': {
@@ -187,8 +197,8 @@ export const I18N = {
         name: 'Visualización Espacial',
         shortName: 'Visualización Espacial',
         tag: '0, 1, 2',
-        desc: 'Compara 2 cajas e identifica rotaciones 2D válidas vs. espejos.',
-        hintDesc: 'Discriminación de rotación plana 2D vs. reflexión especular en 2 cajas.',
+        desc: 'Compara 2 cajas e identifica rotaciones 2D a 90° de letras vs. espejos.',
+        hintDesc: 'Discriminación de rotación plana 2D a 90° de letras mayúsculas vs. reflexión especular en 2 cajas.',
         keys: 'Teclas 0, 1, 2'
       },
       'mixed': {
@@ -245,7 +255,7 @@ export const I18N = {
         '<strong>Perceptual Speed:</strong> Se muestra una matriz de 4 columnas de pares de letras. Se cuenta cuántos pares contienen exactamente la misma letra (insensible a mayúsculas: E/e sí, Q/y no). Opciones: 0 a 4.',
         '<strong>Reasoning:</strong> En Fase 1 se muestra una premisa de ordenación (ej. <em>"Tom is heavier than Fred"</em>). Tras memorizarla y pulsar Espacio, la afirmación se oculta y surge la pregunta directa (ej. <em>"Who is heavier?"</em>). Mide memoria de trabajo verbal y deducción relacional.',
         '<strong>Word Meaning:</strong> Se muestran 3 palabras en inglés. Dos guardan una relación semántica estricta (sinónimos o antónimos) y una tercera es el término intruso (Odd-One-Out). Se debe pulsar el intruso.',
-        '<strong>Spatial Visualisation:</strong> Se evalúan 2 cajas conteniendo pares de símbolos asimétricos 2D. Se determina cuántas cajas (0, 1 o 2) contienen una rotación plana legítima en lugar de una reflexión especular (espejo).'
+        '<strong>Spatial Visualisation:</strong> Se evalúan 2 cajas con letras mayúsculas asimétricas (o poliformas en modo reto). Se determina cuántas cajas (0, 1 o 2) contienen una rotación plana legítima a 90° en lugar de una reflexión especular (espejo).'
       ],
       ergonomicsTitle: 'Ergonomía de Teclado',
       ergonomicsDesc: 'Para eliminar la latencia mecánica del ratón, todos los ítems responden directamente a las teclas numéricas del teclado principal o del teclado numérico (Numpad), así como a las flechas de dirección.'

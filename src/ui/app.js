@@ -22,6 +22,9 @@ const elDurationLabel = document.getElementById('duration-label');
 const elDurationSelect = document.getElementById('duration-select');
 const elStartBtn = document.getElementById('start-btn');
 const elBatteryHint = document.getElementById('battery-hint');
+const elSpatialModeGroup = document.getElementById('spatial-mode-group');
+const elSpatialModeLabel = document.getElementById('spatial-mode-label');
+const elSpatialModeSelect = document.getElementById('spatial-mode-select');
 
 const elBatteryName = document.getElementById('session-battery-name');
 const elKeyHelp = document.getElementById('session-key-help');
@@ -92,6 +95,22 @@ function setLanguage(lang) {
     elDurationSelect.appendChild(opt);
   });
 
+  // Re-populate spatial mode options while preserving selected value
+  if (elSpatialModeLabel && t.setup.spatialModeLabel) {
+    elSpatialModeLabel.textContent = t.setup.spatialModeLabel;
+  }
+  if (elSpatialModeSelect && t.setup.spatialModes) {
+    const currentModeVal = elSpatialModeSelect.value || 'standard';
+    elSpatialModeSelect.innerHTML = '';
+    t.setup.spatialModes.forEach((m) => {
+      const opt = document.createElement('option');
+      opt.value = m.value;
+      opt.textContent = m.label;
+      if (m.value === currentModeVal) opt.selected = true;
+      elSpatialModeSelect.appendChild(opt);
+    });
+  }
+
   // Session panel labels
   if (elEndBtn) elEndBtn.textContent = t.session.endBtn;
   if (elHudLblScore) elHudLblScore.textContent = t.session.hudScore;
@@ -155,6 +174,10 @@ function renderBatteryCards() {
  */
 function updateSetupHint() {
   const t = I18N[currentLang] || I18N.en;
+
+  if (elSpatialModeGroup) {
+    elSpatialModeGroup.style.display = (selectedBattery === BATTERIES.SPATIAL || selectedBattery === 'mixed') ? 'flex' : 'none';
+  }
 
   if (selectedBattery === 'mixed') {
     elBatteryHint.innerHTML = `<strong>${t.setup.mixedHintTitle}</strong> ${t.setup.mixedHintDesc}`;
@@ -225,12 +248,14 @@ function handleErgonomicKey(key) {
  */
 function startSession() {
   const durationSec = parseInt(elDurationSelect.value, 10);
+  const spatialMode = elSpatialModeSelect ? elSpatialModeSelect.value : 'standard';
   const lang = currentLang;
 
   currentEngine = new SessionEngine({
     battery: selectedBattery,
     durationSec,
     lang,
+    spatialMode,
     callbacks: {
       onStart: handleSessionStart,
       onTick: handleSessionTick,

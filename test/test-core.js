@@ -91,24 +91,59 @@ for (let i = 0; i < ITERATIONS; i++) {
 console.log('Word Meaning passed!');
 
 // 5. Spatial Visualisation Test
-console.log(`Testing Spatial Visualisation (${ITERATIONS} iterations)...`);
+console.log(`Testing Spatial Visualisation Standard GIA (${ITERATIONS} iterations)...`);
+const GIA_VALID_ANGLES = [0, 90, 180, 270];
+const GIA_VALID_LETTERS = ['R', 'F', 'P', 'J', 'L', 'G', 'Q'];
+
 for (let i = 0; i < ITERATIONS; i++) {
   const q = generateSpatialQuestion();
   assert.strictEqual(q.type, 'spatial');
   assert.strictEqual(q.options.length, 3);
   assert.strictEqual(q.data.boxes.length, 2);
+  assert.strictEqual(q.data.spatialMode, 'standard');
 
   let manualMatchCount = 0;
   for (const box of q.data.boxes) {
-    // A box is a match if mirrored is false on bottom
-    const isMatch = !box.bottom.mirrored;
+    // Both top and bottom rotations must be orthogonal multiples of 90 degrees
+    assert(GIA_VALID_ANGLES.includes(box.top.rotation), `Invalid top angle: ${box.top.rotation}`);
+    assert(GIA_VALID_ANGLES.includes(box.bottom.rotation), `Invalid bottom angle: ${box.bottom.rotation}`);
+
+    // Must be a valid GIA asymmetric capital letter
+    assert(GIA_VALID_LETTERS.includes(box.char), `Invalid letter: ${box.char}`);
+
+    // A box is a match iff top and bottom share the same chirality
+    const isMatch = box.top.mirrored === box.bottom.mirrored;
     assert.strictEqual(box.isMatch, isMatch);
     if (isMatch) manualMatchCount++;
   }
   assert.strictEqual(q.data.matchCount, manualMatchCount);
   assert.strictEqual(q.correctId, String(manualMatchCount));
 }
-console.log('Spatial Visualisation passed!');
+console.log('Spatial Visualisation Standard GIA passed!');
+
+console.log(`Testing Spatial Visualisation Challenge Mode (${ITERATIONS} iterations)...`);
+const CHALLENGE_VALID_ANGLES = [0, 45, 90, 135, 180, 225, 270, 315];
+
+for (let i = 0; i < ITERATIONS; i++) {
+  const q = generateSpatialQuestion({ spatialMode: 'challenge' });
+  assert.strictEqual(q.type, 'spatial');
+  assert.strictEqual(q.options.length, 3);
+  assert.strictEqual(q.data.boxes.length, 2);
+  assert.strictEqual(q.data.spatialMode, 'challenge');
+
+  let manualMatchCount = 0;
+  for (const box of q.data.boxes) {
+    assert(CHALLENGE_VALID_ANGLES.includes(box.top.rotation), `Invalid challenge top angle: ${box.top.rotation}`);
+    assert(CHALLENGE_VALID_ANGLES.includes(box.bottom.rotation), `Invalid challenge bottom angle: ${box.bottom.rotation}`);
+
+    const isMatch = box.top.mirrored === box.bottom.mirrored;
+    assert.strictEqual(box.isMatch, isMatch);
+    if (isMatch) manualMatchCount++;
+  }
+  assert.strictEqual(q.data.matchCount, manualMatchCount);
+  assert.strictEqual(q.correctId, String(manualMatchCount));
+}
+console.log('Spatial Visualisation Challenge Mode passed!');
 
 // 6. Mixed battery test
 console.log('Testing Mixed Battery generator...');

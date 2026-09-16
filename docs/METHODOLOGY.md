@@ -65,12 +65,14 @@ Unlike conventional IQ tests that measure accumulated knowledge or encyclopedic 
 
 ### 2.5. Spatial Visualisation
 - **Construct:** Rigid 2D mental rotation ($SO(2)$) versus chirality (planar reflection/mirroring).
-- **Format:** Two separate presentation boxes. Each box displays two 2D asymmetric glyphs or symbols (top and bottom).
+- **Format:** Two separate presentation boxes. Each box displays two asymmetric symbols (top and bottom).
+- **Official GIA Specification:** Evaluates asymmetric uppercase letters (`R`, `F`, `P`, `J`, `L`, `G`, `Q`) at strict orthogonal angles ($\theta \in \{0^\circ, 90^\circ, 180^\circ, 270^\circ\}$).
+- **Challenge Mode:** Features abstract geometric polyforms and oblique angles in increments of $45^\circ$.
 - **Match Criteria:**
-  - The bottom symbol must be a pure rotation of the top symbol ($R(\theta)$ where $\theta \in [0^\circ, 360^\circ)$).
-  - If the bottom symbol involves an axial reflection ($M \cdot R(\theta)$), it represents a mirror image and **does not match**.
+  - Both symbols share identical chirality (both normal or both reflected) such that the bottom symbol is a pure 2D rotation of the top symbol ($R(\theta)$).
+  - If one symbol is reflected relative to the other, it represents an axial mirror image ($M \cdot R(\theta)$) and **does not match**.
 - **Response:** Count how many of the two boxes contain valid rotated matches: $0$, $1$, or $2$.
-- **Candidate Strategy:** Identify a distinctive chiral feature (such as the asymmetric flag on an 'F' or the loop on a 'P') and verify whether its rotational orientation remains invariant.
+- **Candidate Strategy:** Identify a distinctive chiral feature (such as the leg of an 'R' or the arms of an 'F') and track whether its clockwise/counter-clockwise orientation remains preserved.
 
 ---
 

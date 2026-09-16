@@ -7,17 +7,28 @@ import { I18N } from '../data/i18n.js';
  * @param {boolean} isMirrored - Whether to reflect horizontally
  * @returns {string} SVG HTML
  */
-export function renderSpatialSVG(pathData, rotationDeg, isMirrored) {
+export function renderSpatialSVG(shapeOrPath, rotationDeg, isMirrored) {
   // SVG viewBox is 100x100. Center of rotation is (50, 50).
   // When mirrored, we reflect horizontally about x=50 using: translate(100,0) scale(-1,1).
   const transform = isMirrored
     ? `rotate(${rotationDeg} 50 50) translate(100, 0) scale(-1, 1)`
     : `rotate(${rotationDeg} 50 50)`;
 
+  const char = typeof shapeOrPath === 'object' ? shapeOrPath.char : null;
+  const pathData = typeof shapeOrPath === 'object' ? shapeOrPath.path : shapeOrPath;
+
+  let innerContent = '';
+  if (char) {
+    // Crisp typographic capital letter matching the Thomas GIA official booklet
+    innerContent = `<text x="50" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="64" font-weight="800" text-anchor="middle" dominant-baseline="central" fill="currentColor">${char}</text>`;
+  } else if (pathData) {
+    innerContent = `<path d="${pathData}" fill="currentColor" />`;
+  }
+
   return `
     <svg class="spatial-glyph" viewBox="0 0 100 100" width="80" height="80">
       <g transform="${transform}">
-        <path d="${pathData}" fill="currentColor" />
+        ${innerContent}
       </g>
     </svg>
   `;
@@ -214,16 +225,17 @@ export class QuestionRenderer {
 
   renderSpatialHTML(question) {
     const t = I18N[this.lang]?.session || I18N.en.session;
+    const headerLabel = t.boxHeader || (this.lang === 'es' ? 'Caja' : 'Box');
     const boxes = question.data.boxes;
     const boxesHTML = boxes.map((box, idx) => `
       <div class="spatial-box-card">
-        <div class="box-header">${t.boxHeader} ${idx + 1}</div>
+        <div class="box-header">${headerLabel} ${idx + 1}</div>
         <div class="symbol-container top-symbol">
-          ${renderSpatialSVG(box.path, box.top.rotation, box.top.mirrored)}
+          ${renderSpatialSVG(box, box.top.rotation, box.top.mirrored)}
         </div>
         <div class="symbol-divider"></div>
         <div class="symbol-container bottom-symbol">
-          ${renderSpatialSVG(box.path, box.bottom.rotation, box.bottom.mirrored)}
+          ${renderSpatialSVG(box, box.bottom.rotation, box.bottom.mirrored)}
         </div>
       </div>
     `).join('');
