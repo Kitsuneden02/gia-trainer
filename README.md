@@ -2,6 +2,8 @@
 
 > **Interactive, modern, and high-fidelity simulator for the Thomas International GIA (General Intelligence Assessment).**
 
+**Live Web App:** [https://kitsuneden02.github.io/gia-trainer/](https://kitsuneden02.github.io/gia-trainer/)
+
 A free, open-source psychometric training tool engineered to prepare technical candidates for high-stakes cognitive speed assessments (such as those administered by leading international engineering and technology organizations).
 
 ---
@@ -44,7 +46,7 @@ $$\text{Net Score} = \text{Correct} - (0.5 \times \text{Incorrect})$$
 
 ### Live Web App
 Access the live simulator directly in your browser with zero installation:
-- **Online Demo:** Hosted on GitHub Pages (100% client-side, privacy-first, no account required).
+- **Online Demo:** [https://kitsuneden02.github.io/gia-trainer/](https://kitsuneden02.github.io/gia-trainer/) (100% client-side, privacy-first, no account required).
 
 ### Running Locally
 Because the application is built with vanilla ES modules, it requires no build step, transpilation, or external dependencies.
