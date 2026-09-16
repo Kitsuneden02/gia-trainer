@@ -58,24 +58,49 @@ for (let i = 0; i < ITERATIONS; i++) {
 }
 console.log('Perceptual Speed passed!');
 
-// 3. Reasoning Test
-console.log(`Testing Reasoning (${ITERATIONS} iterations)...`);
+// 3. Reasoning Test (EN and ES Grammar & Logic validation)
+console.log(`Testing Reasoning EN & ES (${ITERATIONS} iterations each)...`);
 for (let i = 0; i < ITERATIONS; i++) {
-  const q = generateReasoningQuestion();
-  assert.strictEqual(q.type, 'reasoning');
-  assert.strictEqual(q.hasTwoPhases, true);
-  assert(q.premise.length > 5);
-  assert(q.prompt.length > 5);
-  assert.strictEqual(q.options.length, 2);
+  // Test English
+  const qEn = generateReasoningQuestion({ lang: 'en' });
+  assert.strictEqual(qEn.type, 'reasoning');
+  assert.strictEqual(qEn.hasTwoPhases, true);
+  assert(qEn.premise.length > 5);
+  assert(qEn.prompt.length > 5);
+  assert.strictEqual(qEn.options.length, 2);
 
-  const { personA, personB, aIsGreaterThanB, askPositive } = q.data;
-  const expectedWinner = askPositive
-    ? (aIsGreaterThanB ? personA : personB)
-    : (aIsGreaterThanB ? personB : personA);
+  // English grammar checks: should not have "as [comparative] as" (e.g., "as heavier as", "as taller as")
+  assert(!qEn.premise.includes('as heavier as'), `Ungrammatical EN premise: ${qEn.premise}`);
+  assert(!qEn.premise.includes('as lighter as'), `Ungrammatical EN premise: ${qEn.premise}`);
+  assert(!qEn.premise.includes('as taller as'), `Ungrammatical EN premise: ${qEn.premise}`);
+  assert(!qEn.premise.includes('as shorter as'), `Ungrammatical EN premise: ${qEn.premise}`);
 
-  assert.strictEqual(q.correctId, expectedWinner);
+  const { personA: pAEn, personB: pBEn, aIsGreaterThanB: aGtBEn, askPositive: askPosEn } = qEn.data;
+  const expectedWinnerEn = askPosEn
+    ? (aGtBEn ? pAEn : pBEn)
+    : (aGtBEn ? pBEn : pAEn);
+  assert.strictEqual(qEn.correctId, expectedWinnerEn);
+
+  // Test Spanish
+  const qEs = generateReasoningQuestion({ lang: 'es' });
+  assert.strictEqual(qEs.type, 'reasoning');
+  assert.strictEqual(qEs.hasTwoPhases, true);
+  assert(qEs.premise.length > 5);
+  assert(qEs.prompt.length > 5);
+  assert.strictEqual(qEs.options.length, 2);
+
+  // Spanish grammar checks: NEVER allow "tan más", "tan menos", "más más"
+  assert(!qEs.premise.includes('tan más'), `Ungrammatical Spanish premise with "tan más": ${qEs.premise}`);
+  assert(!qEs.premise.includes('tan menos'), `Ungrammatical Spanish premise with "tan menos": ${qEs.premise}`);
+  assert(!qEs.premise.includes('más más'), `Ungrammatical Spanish premise with "más más": ${qEs.premise}`);
+
+  const { personA: pAEs, personB: pBEs, aIsGreaterThanB: aGtBEs, askPositive: askPosEs } = qEs.data;
+  const expectedWinnerEs = askPosEs
+    ? (aGtBEs ? pAEs : pBEs)
+    : (aGtBEs ? pBEs : pAEs);
+  assert.strictEqual(qEs.correctId, expectedWinnerEs);
 }
-console.log('Reasoning passed!');
+console.log('Reasoning EN & ES passed!');
 
 // 4. Word Meaning Test
 console.log(`Testing Word Meaning (${ITERATIONS} iterations)...`);

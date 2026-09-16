@@ -42,48 +42,45 @@ export function generateReasoningQuestion({ lang = 'en' } = {}) {
   let premiseText;
 
   if (lang === 'es') {
-    const esDims = {
-      weight: { pos: 'más pesado', neg: 'más liviano' },
-      height: { pos: 'más alto', neg: 'más bajo' },
-      speed: { pos: 'más rápido', neg: 'más lento' },
-      age: { pos: 'más viejo', neg: 'más joven' },
-      intelligence: { pos: 'más brillante', neg: 'más torpe' },
-      strength: { pos: 'más fuerte', neg: 'más débil' },
-      wealth: { pos: 'más rico', neg: 'más pobre' },
-      elevation: { pos: 'más alto', neg: 'más bajo' },
-      arrival: { pos: 'más temprano', neg: 'más tarde' },
-      temperature: { pos: 'más cálido', neg: 'más frío' },
-      hardness: { pos: 'más duro', neg: 'más blando' },
-      bravery: { pos: 'más valiente', neg: 'más tímido' }
-    }[dim.dimension] || { pos: dim.positive, neg: dim.negative };
+    const es = dim.es || {
+      posBase: dim.posBase || 'alto',
+      posComp: dim.posComp || 'más alto',
+      negBase: dim.negBase || 'bajo',
+      negComp: dim.negComp || 'más bajo'
+    };
 
     if (premiseType === 0) {
       aIsGreaterThanB = true;
-      premiseText = `${personA} es ${esDims.pos} que ${personB}.`;
+      premiseText = `${personA} es ${es.posComp} que ${personB}.`;
     } else if (premiseType === 1) {
       aIsGreaterThanB = false;
-      premiseText = `${personA} es ${esDims.neg} que ${personB}.`;
+      premiseText = `${personA} es ${es.negComp} que ${personB}.`;
     } else if (premiseType === 2) {
       aIsGreaterThanB = false;
-      premiseText = `${personA} no es tan ${esDims.pos} como ${personB}.`;
+      premiseText = `${personA} no es tan ${es.posBase} como ${personB}.`;
     } else {
       aIsGreaterThanB = true;
-      premiseText = `${personA} no es tan ${esDims.neg} como ${personB}.`;
+      premiseText = `${personA} no es tan ${es.negBase} como ${personB}.`;
     }
   } else {
     // English (Official GIA standard)
+    const posComp = dim.posComp || dim.positive;
+    const negComp = dim.negComp || dim.negative;
+    const posBase = dim.posBase || dim.positive;
+    const negBase = dim.negBase || dim.negative;
+
     if (premiseType === 0) {
       aIsGreaterThanB = true;
-      premiseText = `${personA} is ${dim.positive} than ${personB}.`;
+      premiseText = `${personA} is ${posComp} than ${personB}.`;
     } else if (premiseType === 1) {
       aIsGreaterThanB = false;
-      premiseText = `${personA} is ${dim.negative} than ${personB}.`;
+      premiseText = `${personA} is ${negComp} than ${personB}.`;
     } else if (premiseType === 2) {
       aIsGreaterThanB = false;
-      premiseText = `${personA} is not as ${dim.positive} as ${personB}.`;
+      premiseText = `${personA} is not as ${posBase} as ${personB}.`;
     } else {
       aIsGreaterThanB = true;
-      premiseText = `${personA} is not as ${dim.negative} as ${personB}.`;
+      premiseText = `${personA} is not as ${negBase} as ${personB}.`;
     }
   }
 
@@ -99,23 +96,15 @@ export function generateReasoningQuestion({ lang = 'en' } = {}) {
 
   let questionText;
   if (lang === 'es') {
-    const esDims = {
-      weight: { pos: 'más pesado', neg: 'más liviano' },
-      height: { pos: 'más alto', neg: 'más bajo' },
-      speed: { pos: 'más rápido', neg: 'más lento' },
-      age: { pos: 'más viejo', neg: 'más joven' },
-      intelligence: { pos: 'más brillante', neg: 'más torpe' },
-      strength: { pos: 'más fuerte', neg: 'más débil' },
-      wealth: { pos: 'más rico', neg: 'más pobre' },
-      elevation: { pos: 'más alto', neg: 'más bajo' },
-      arrival: { pos: 'más temprano', neg: 'más tarde' },
-      temperature: { pos: 'más cálido', neg: 'más frío' },
-      hardness: { pos: 'más duro', neg: 'más blando' },
-      bravery: { pos: 'más valiente', neg: 'más tímido' }
-    }[dim.dimension] || { pos: dim.positive, neg: dim.negative };
-    questionText = `¿Quién es ${askPositive ? esDims.pos : esDims.neg}?`;
+    const es = dim.es || {
+      posComp: dim.posComp || 'más alto',
+      negComp: dim.negComp || 'más bajo'
+    };
+    questionText = `¿Quién es ${askPositive ? es.posComp : es.negComp}?`;
   } else {
-    questionText = `Who is ${askPositive ? dim.positive : dim.negative}?`;
+    const posComp = dim.posComp || dim.positive;
+    const negComp = dim.negComp || dim.negative;
+    questionText = `Who is ${askPositive ? posComp : negComp}?`;
   }
 
   // Options: personA and personB (randomize order on screen)
