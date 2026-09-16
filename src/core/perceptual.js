@@ -24,9 +24,7 @@ function pickDifferentLetter(exclude) {
 
 /**
  * Generates a Perceptual Speed question (4 letter pairs, count matching pairs).
- * Alternates between:
- *  - Lowercase top / Uppercase bottom (50%, as shown in GIA standard practice)
- *  - Uppercase top / Lowercase bottom (50%)
+ * Official Thomas GIA standard: lowercase ALWAYS on top, uppercase ALWAYS on bottom.
  * @returns {import('./types.js').Question}
  */
 export function generatePerceptualQuestion() {
@@ -42,17 +40,15 @@ export function generatePerceptualQuestion() {
   }
   const matchSet = new Set(indices.slice(0, matchCount));
 
-  // Case orientation alternation
-  const topIsUpper = Math.random() < 0.5;
-
   const pairs = [];
   for (let i = 0; i < 4; i++) {
     const baseChar = pickLetter();
     const isMatch = matchSet.has(i);
     const otherChar = isMatch ? baseChar : pickDifferentLetter(baseChar);
 
-    const topChar = topIsUpper ? baseChar.toUpperCase() : baseChar.toLowerCase();
-    const bottomChar = topIsUpper ? otherChar.toLowerCase() : otherChar.toUpperCase();
+    // Official Thomas GIA standard: lowercase ALWAYS on top, uppercase ALWAYS on bottom
+    const topChar = baseChar.toLowerCase();
+    const bottomChar = otherChar.toUpperCase();
 
     pairs.push({
       top: topChar,
@@ -77,8 +73,7 @@ export function generatePerceptualQuestion() {
     correctId: String(matchCount),
     data: {
       pairs,
-      matchCount,
-      topIsUpper
+      matchCount
     },
     metadata: {
       pairsSummary: pairs.map((p) => `${p.top}/${p.bottom}:${p.isMatch ? '1' : '0'}`).join(' ')

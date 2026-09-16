@@ -49,6 +49,8 @@ for (let i = 0; i < ITERATIONS; i++) {
 
   let manualMatchCount = 0;
   for (const pair of pairs) {
+    assert.strictEqual(pair.top, pair.top.toLowerCase(), 'Top letter must always be lowercase');
+    assert.strictEqual(pair.bottom, pair.bottom.toUpperCase(), 'Bottom letter must always be uppercase');
     const isSameChar = pair.top.toLowerCase() === pair.bottom.toLowerCase();
     assert.strictEqual(pair.isMatch, isSameChar);
     if (pair.isMatch) manualMatchCount++;

@@ -595,6 +595,26 @@ select:focus {
   align-items: center;
   gap: 10px;
   min-width: 76px;
+  transition: border-color 0.1s ease, background 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease, transform 0.1s ease;
+}
+
+.letter-pair-box.match-highlight {
+  border-color: var(--green);
+  background: rgba(16, 185, 129, 0.22);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+  transform: translateY(-2px);
+}
+
+.letter-pair-box.match-highlight .letter-cell {
+  color: #34d399;
+}
+
+.letter-pair-box.match-highlight .letter-divider {
+  background: rgba(16, 185, 129, 0.6);
+}
+
+.letter-pair-box.non-match {
+  opacity: 0.4;
 }
 
 .letter-cell {
@@ -675,6 +695,18 @@ select:focus {
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  transition: border-color 0.1s ease, background 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease, transform 0.1s ease;
+}
+
+.spatial-box-card.match-highlight {
+  border-color: var(--green);
+  background: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.spatial-box-card.non-match {
+  opacity: 0.4;
 }
 
 .box-header {

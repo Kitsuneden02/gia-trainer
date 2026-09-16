@@ -53,6 +53,7 @@ export class QuestionRenderer {
    */
   render(question, phase, onSelectOption, onContinue) {
     this.container.innerHTML = '';
+    this.currentQuestion = question;
 
     if (question.hasTwoPhases && phase === 'read') {
       this.renderReasoningPremise(question, onContinue);
@@ -263,5 +264,35 @@ export class QuestionRenderer {
         btn.classList.add('wrong');
       }
     });
+
+    // Instant visual feedback for Perceptual Speed: highlight matching pairs
+    if (this.currentQuestion && this.currentQuestion.type === 'perceptual' && this.currentQuestion.data?.pairs) {
+      const pairBoxes = this.container.querySelectorAll('.letter-pair-box');
+      this.currentQuestion.data.pairs.forEach((pair, idx) => {
+        const box = pairBoxes[idx];
+        if (box) {
+          if (pair.isMatch) {
+            box.classList.add('match-highlight');
+          } else {
+            box.classList.add('non-match');
+          }
+        }
+      });
+    }
+
+    // Instant visual feedback for Spatial Visualisation: highlight matching boxes
+    if (this.currentQuestion && this.currentQuestion.type === 'spatial' && this.currentQuestion.data?.boxes) {
+      const spatialBoxes = this.container.querySelectorAll('.spatial-box-card');
+      this.currentQuestion.data.boxes.forEach((boxData, idx) => {
+        const boxEl = spatialBoxes[idx];
+        if (boxEl) {
+          if (boxData.isMatch) {
+            boxEl.classList.add('match-highlight');
+          } else {
+            boxEl.classList.add('non-match');
+          }
+        }
+      });
+    }
   }
 }
