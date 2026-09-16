@@ -94,7 +94,26 @@ for (let i = 0; i < ITERATIONS; i++) {
   assert(!qEs.premise.includes('tan menos'), `Ungrammatical Spanish premise with "tan menos": ${qEs.premise}`);
   assert(!qEs.premise.includes('más más'), `Ungrammatical Spanish premise with "más más": ${qEs.premise}`);
 
-  const { personA: pAEs, personB: pBEs, aIsGreaterThanB: aGtBEs, askPositive: askPosEs } = qEs.data;
+  // Check that purged awkward dimensions never appear
+  assert(!qEs.premise.includes('tarde'), `Inappropriate arrival dimension: ${qEs.premise}`);
+  assert(!qEs.prompt.includes('temprano'), `Inappropriate arrival dimension: ${qEs.prompt}`);
+  assert(!qEs.premise.includes('blando'), `Inappropriate hardness dimension: ${qEs.premise}`);
+  assert(!qEs.premise.includes('cálido'), `Inappropriate temperature dimension: ${qEs.premise}`);
+
+  // Gender agreement validation
+  const { personA: pAEs, personB: pBEs, gender: gEs, aIsGreaterThanB: aGtBEs, askPositive: askPosEs } = qEs.data;
+  if (gEs === 'f') {
+    // Should never contain masculine-only endings for gender-inflected dimensions
+    assert(!qEs.premise.includes(' más alto ') && !qEs.premise.includes(' tan alto '), `Feminine subject with masculine 'alto': ${qEs.premise}`);
+    assert(!qEs.premise.includes(' más pesado ') && !qEs.premise.includes(' tan pesado '), `Feminine subject with masculine 'pesado': ${qEs.premise}`);
+    assert(!qEs.premise.includes(' más rápido ') && !qEs.premise.includes(' tan rápido '), `Feminine subject with masculine 'rápido': ${qEs.premise}`);
+  } else {
+    // Should never contain feminine-only endings for masculine subjects
+    assert(!qEs.premise.includes(' más alta ') && !qEs.premise.includes(' tan alta '), `Masculine subject with feminine 'alta': ${qEs.premise}`);
+    assert(!qEs.premise.includes(' más pesada ') && !qEs.premise.includes(' tan pesada '), `Masculine subject with feminine 'pesada': ${qEs.premise}`);
+    assert(!qEs.premise.includes(' más rápida ') && !qEs.premise.includes(' tan rápida '), `Masculine subject with feminine 'rápida': ${qEs.premise}`);
+  }
+
   const expectedWinnerEs = askPosEs
     ? (aGtBEs ? pAEs : pBEs)
     : (aGtBEs ? pBEs : pAEs);

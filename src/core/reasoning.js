@@ -3,7 +3,11 @@
  * Construct: Working memory & relational logical deduction in 2 phases.
  */
 
-import { REASONING_NAMES, COMPARATIVE_DIMENSIONS } from '../data/reasoning-data.js';
+import {
+  REASONING_NAMES_MALE,
+  REASONING_NAMES_FEMALE,
+  COMPARATIVE_DIMENSIONS
+} from '../data/reasoning-data.js';
 
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -25,7 +29,11 @@ function pickTwoDistinct(arr) {
  * @returns {import('./types.js').Question}
  */
 export function generateReasoningQuestion({ lang = 'en' } = {}) {
-  const [personA, personB] = pickTwoDistinct(REASONING_NAMES);
+  // Official GIA compares entities within the same gender category to ensure natural grammar
+  const isFemale = Math.random() < 0.5;
+  const namePool = isFemale ? REASONING_NAMES_FEMALE : REASONING_NAMES_MALE;
+  const gender = isFemale ? 'f' : 'm';
+  const [personA, personB] = pickTwoDistinct(namePool);
   const dim = pickRandom(COMPARATIVE_DIMENSIONS);
 
   // 4 premise variations:
@@ -42,11 +50,12 @@ export function generateReasoningQuestion({ lang = 'en' } = {}) {
   let premiseText;
 
   if (lang === 'es') {
-    const es = dim.es || {
-      posBase: dim.posBase || 'alto',
-      posComp: dim.posComp || 'más alto',
-      negBase: dim.negBase || 'bajo',
-      negComp: dim.negComp || 'más bajo'
+    const esGender = dim.es?.[gender] || dim.es || {};
+    const es = {
+      posBase: esGender.posBase || 'alto',
+      posComp: esGender.posComp || 'más alto',
+      negBase: esGender.negBase || 'bajo',
+      negComp: esGender.negComp || 'más bajo'
     };
 
     if (premiseType === 0) {
@@ -96,9 +105,10 @@ export function generateReasoningQuestion({ lang = 'en' } = {}) {
 
   let questionText;
   if (lang === 'es') {
-    const es = dim.es || {
-      posComp: dim.posComp || 'más alto',
-      negComp: dim.negComp || 'más bajo'
+    const esGender = dim.es?.[gender] || dim.es || {};
+    const es = {
+      posComp: esGender.posComp || 'más alto',
+      negComp: esGender.negComp || 'más bajo'
     };
     questionText = `¿Quién es ${askPositive ? es.posComp : es.negComp}?`;
   } else {
@@ -138,6 +148,7 @@ export function generateReasoningQuestion({ lang = 'en' } = {}) {
     data: {
       personA,
       personB,
+      gender,
       dimension: dim.dimension,
       premiseType,
       askPositive,

@@ -2,12 +2,20 @@
  * GIA Reasoning Data: Comparative dimensions, bipolar adjectives, and entity pools.
  * Includes both base adjectives (for equative "not as [base] as" / "no es tan [base] como")
  * and comparative adjectives (for "is [comp] than" / "es [comp] que").
+ * Strictly uses human-appropriate attributes matching official Thomas GIA psychometrics.
  */
 
+export const REASONING_NAMES_MALE = [
+  'Tom', 'Fred', 'Ben', 'John', 'Pete', 'David', 'Mark', 'Paul', 'Sam', 'Luke', 'Carlos', 'James'
+];
+
+export const REASONING_NAMES_FEMALE = [
+  'Mary', 'Ana', 'Rachel', 'Wendy', 'Lisa', 'Emma', 'Jane', 'Sarah', 'Elena', 'Lucy'
+];
+
 export const REASONING_NAMES = [
-  'Tom', 'Fred', 'Ben', 'Mary', 'Ana', 'John', 'Pete', 'Rachel',
-  'Wendy', 'David', 'Lisa', 'Mark', 'Paul', 'Sam', 'Emma', 'Luke',
-  'Alex', 'Jane', 'Sarah', 'Chris', 'Elena', 'Carlos', 'James', 'Lucy'
+  ...REASONING_NAMES_MALE,
+  ...REASONING_NAMES_FEMALE
 ];
 
 export const COMPARATIVE_DIMENSIONS = [
@@ -21,10 +29,18 @@ export const COMPARATIVE_DIMENSIONS = [
     negComp: 'lighter',
     noun: 'weight',
     es: {
-      posBase: 'pesado',
-      posComp: 'más pesado',
-      negBase: 'liviano',
-      negComp: 'más liviano'
+      m: {
+        posBase: 'pesado',
+        posComp: 'más pesado',
+        negBase: 'liviano',
+        negComp: 'más liviano'
+      },
+      f: {
+        posBase: 'pesada',
+        posComp: 'más pesada',
+        negBase: 'liviana',
+        negComp: 'más liviana'
+      }
     }
   },
   {
@@ -37,10 +53,18 @@ export const COMPARATIVE_DIMENSIONS = [
     negComp: 'shorter',
     noun: 'height',
     es: {
-      posBase: 'alto',
-      posComp: 'más alto',
-      negBase: 'bajo',
-      negComp: 'más bajo'
+      m: {
+        posBase: 'alto',
+        posComp: 'más alto',
+        negBase: 'bajo',
+        negComp: 'más bajo'
+      },
+      f: {
+        posBase: 'alta',
+        posComp: 'más alta',
+        negBase: 'baja',
+        negComp: 'más baja'
+      }
     }
   },
   {
@@ -53,42 +77,18 @@ export const COMPARATIVE_DIMENSIONS = [
     negComp: 'slower',
     noun: 'speed',
     es: {
-      posBase: 'rápido',
-      posComp: 'más rápido',
-      negBase: 'lento',
-      negComp: 'más lento'
-    }
-  },
-  {
-    dimension: 'age',
-    positive: 'older',
-    negative: 'younger',
-    posBase: 'old',
-    posComp: 'older',
-    negBase: 'young',
-    negComp: 'younger',
-    noun: 'age',
-    es: {
-      posBase: 'viejo',
-      posComp: 'más viejo',
-      negBase: 'joven',
-      negComp: 'más joven'
-    }
-  },
-  {
-    dimension: 'intelligence',
-    positive: 'brighter',
-    negative: 'duller',
-    posBase: 'bright',
-    posComp: 'brighter',
-    negBase: 'dull',
-    negComp: 'duller',
-    noun: 'acuity',
-    es: {
-      posBase: 'brillante',
-      posComp: 'más brillante',
-      negBase: 'torpe',
-      negComp: 'más torpe'
+      m: {
+        posBase: 'rápido',
+        posComp: 'más rápido',
+        negBase: 'lento',
+        negComp: 'más lento'
+      },
+      f: {
+        posBase: 'rápida',
+        posComp: 'más rápida',
+        negBase: 'lenta',
+        negComp: 'más lenta'
+      }
     }
   },
   {
@@ -101,106 +101,18 @@ export const COMPARATIVE_DIMENSIONS = [
     negComp: 'weaker',
     noun: 'strength',
     es: {
-      posBase: 'fuerte',
-      posComp: 'más fuerte',
-      negBase: 'débil',
-      negComp: 'más débil'
-    }
-  },
-  {
-    dimension: 'wealth',
-    positive: 'richer',
-    negative: 'poorer',
-    posBase: 'rich',
-    posComp: 'richer',
-    negBase: 'poor',
-    negComp: 'poorer',
-    noun: 'wealth',
-    es: {
-      posBase: 'rico',
-      posComp: 'más rico',
-      negBase: 'pobre',
-      negComp: 'más pobre'
-    }
-  },
-  {
-    dimension: 'elevation',
-    positive: 'higher',
-    negative: 'lower',
-    posBase: 'high',
-    posComp: 'higher',
-    negBase: 'low',
-    negComp: 'lower',
-    noun: 'position',
-    es: {
-      posBase: 'alto',
-      posComp: 'más alto',
-      negBase: 'bajo',
-      negComp: 'más bajo'
-    }
-  },
-  {
-    dimension: 'arrival',
-    positive: 'earlier',
-    negative: 'later',
-    posBase: 'early',
-    posComp: 'earlier',
-    negBase: 'late',
-    negComp: 'later',
-    noun: 'timing',
-    es: {
-      posBase: 'temprano',
-      posComp: 'más temprano',
-      negBase: 'tarde',
-      negComp: 'más tarde'
-    }
-  },
-  {
-    dimension: 'temperature',
-    positive: 'warmer',
-    negative: 'colder',
-    posBase: 'warm',
-    posComp: 'warmer',
-    negBase: 'cold',
-    negComp: 'colder',
-    noun: 'temperature',
-    es: {
-      posBase: 'cálido',
-      posComp: 'más cálido',
-      negBase: 'frío',
-      negComp: 'más frío'
-    }
-  },
-  {
-    dimension: 'hardness',
-    positive: 'harder',
-    negative: 'softer',
-    posBase: 'hard',
-    posComp: 'harder',
-    negBase: 'soft',
-    negComp: 'softer',
-    noun: 'hardness',
-    es: {
-      posBase: 'duro',
-      posComp: 'más duro',
-      negBase: 'blando',
-      negComp: 'más blando'
-    }
-  },
-  {
-    dimension: 'bravery',
-    positive: 'braver',
-    negative: 'more timid',
-    posBase: 'brave',
-    posComp: 'braver',
-    negBase: 'timid',
-    negComp: 'más tímido',
-    noun: 'courage',
-    es: {
-      posBase: 'valiente',
-      posComp: 'más valiente',
-      negBase: 'tímido',
-      negComp: 'más tímido'
+      m: {
+        posBase: 'fuerte',
+        posComp: 'más fuerte',
+        negBase: 'débil',
+        negComp: 'más débil'
+      },
+      f: {
+        posBase: 'fuerte',
+        posComp: 'más fuerte',
+        negBase: 'débil',
+        negComp: 'más débil'
+      }
     }
   },
   {
@@ -213,10 +125,186 @@ export const COMPARATIVE_DIMENSIONS = [
     negComp: 'sadder',
     noun: 'mood',
     es: {
-      posBase: 'feliz',
-      posComp: 'más feliz',
-      negBase: 'triste',
-      negComp: 'más triste'
+      m: {
+        posBase: 'feliz',
+        posComp: 'más feliz',
+        negBase: 'triste',
+        negComp: 'más triste'
+      },
+      f: {
+        posBase: 'feliz',
+        posComp: 'más feliz',
+        negBase: 'triste',
+        negComp: 'más triste'
+      }
+    }
+  },
+  {
+    dimension: 'age',
+    positive: 'older',
+    negative: 'younger',
+    posBase: 'old',
+    posComp: 'older',
+    negBase: 'young',
+    negComp: 'younger',
+    noun: 'age',
+    es: {
+      m: {
+        posBase: 'viejo',
+        posComp: 'más viejo',
+        negBase: 'joven',
+        negComp: 'más joven'
+      },
+      f: {
+        posBase: 'vieja',
+        posComp: 'más vieja',
+        negBase: 'joven',
+        negComp: 'más joven'
+      }
+    }
+  },
+  {
+    dimension: 'wealth',
+    positive: 'richer',
+    negative: 'poorer',
+    posBase: 'rich',
+    posComp: 'richer',
+    negBase: 'poor',
+    negComp: 'poorer',
+    noun: 'wealth',
+    es: {
+      m: {
+        posBase: 'rico',
+        posComp: 'más rico',
+        negBase: 'pobre',
+        negComp: 'más pobre'
+      },
+      f: {
+        posBase: 'rica',
+        posComp: 'más rica',
+        negBase: 'pobre',
+        negComp: 'más pobre'
+      }
+    }
+  },
+  {
+    dimension: 'bravery',
+    positive: 'braver',
+    negative: 'more timid',
+    posBase: 'brave',
+    posComp: 'braver',
+    negBase: 'timid',
+    negComp: 'más tímido',
+    noun: 'courage',
+    es: {
+      m: {
+        posBase: 'valiente',
+        posComp: 'más valiente',
+        negBase: 'tímido',
+        negComp: 'más tímido'
+      },
+      f: {
+        posBase: 'valiente',
+        posComp: 'más valiente',
+        negBase: 'tímida',
+        negComp: 'más tímida'
+      }
+    }
+  },
+  {
+    dimension: 'intelligence',
+    positive: 'brighter',
+    negative: 'duller',
+    posBase: 'bright',
+    posComp: 'brighter',
+    negBase: 'dull',
+    negComp: 'duller',
+    noun: 'acuity',
+    es: {
+      m: {
+        posBase: 'inteligente',
+        posComp: 'más inteligente',
+        negBase: 'torpe',
+        negComp: 'más torpe'
+      },
+      f: {
+        posBase: 'inteligente',
+        posComp: 'más inteligente',
+        negBase: 'torpe',
+        negComp: 'más torpe'
+      }
+    }
+  },
+  {
+    dimension: 'calmness',
+    positive: 'calmer',
+    negative: 'more nervous',
+    posBase: 'calm',
+    posComp: 'calmer',
+    negBase: 'nervous',
+    negComp: 'more nervous',
+    noun: 'demeanor',
+    es: {
+      m: {
+        posBase: 'tranquilo',
+        posComp: 'más tranquilo',
+        negBase: 'nervioso',
+        negComp: 'más nervioso'
+      },
+      f: {
+        posBase: 'tranquila',
+        posComp: 'más tranquila',
+        negBase: 'nerviosa',
+        negComp: 'más nerviosa'
+      }
+    }
+  },
+  {
+    dimension: 'generosity',
+    positive: 'more generous',
+    negative: 'stingier',
+    posBase: 'generous',
+    posComp: 'more generous',
+    negBase: 'stingy',
+    negComp: 'stingier',
+    noun: 'generosity',
+    es: {
+      m: {
+        posBase: 'generoso',
+        posComp: 'más generoso',
+        negBase: 'tacaño',
+        negComp: 'más tacaño'
+      },
+      f: {
+        posBase: 'generosa',
+        posComp: 'más generosa',
+        negBase: 'tacaña',
+        negComp: 'más tacaña'
+      }
+    }
+  },
+  {
+    dimension: 'friendliness',
+    positive: 'friendlier',
+    negative: 'more hostile',
+    posBase: 'friendly',
+    posComp: 'friendlier',
+    negBase: 'hostile',
+    negComp: 'more hostile',
+    noun: 'sociability',
+    es: {
+      m: {
+        posBase: 'amable',
+        posComp: 'más amable',
+        negBase: 'antipático',
+        negComp: 'más antipático'
+      },
+      f: {
+        posBase: 'amable',
+        posComp: 'más amable',
+        negBase: 'antipática',
+        negComp: 'más antipática'
+      }
     }
   }
 ];
