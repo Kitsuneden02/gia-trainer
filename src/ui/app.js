@@ -519,7 +519,8 @@ function renderSummaryReport(summary) {
 
   let targetCardHTML = '';
   if (bench && bench.targetQpm > 0) {
-    const gap = stats.throughputQpm - bench.targetQpm;
+    const rawGap = stats.throughputQpm - bench.targetQpm;
+    const gap = Math.round(rawGap * 10) / 10;
     const isSuccess = targetMet;
     const badgeClass = isSuccess ? 'met' : 'missed';
     const badgeText = isSuccess ? sumT.targetAchieved : sumT.targetMissed;
