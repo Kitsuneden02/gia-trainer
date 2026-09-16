@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090d12">
+  <meta name="description" content="GIA Trainer: Simulador interactivo open-source de alta fidelidad para el Thomas International GIA (General Intelligence Assessment).">
+  <title>GIA Trainer | Thomas International GIA Simulator</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230284c7'/><text x='50%' y='58%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='42' font-weight='900' fill='%23ffffff'>GIA</text></svg>">
+  <link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <h1>GIA Trainer</h1>
+      </div>
+      <div class="header-actions">
+        <div class="lang-switcher" id="lang-switcher" role="group" aria-label="Language selector">
+          <button type="button" class="lang-btn active" data-lang="en" title="English">
+            <svg class="flag-icon" viewBox="0 0 60 30" width="16" height="11">
+              <clipPath id="uk-clip"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
+              <g clip-path="url(#uk-clip)">
+                <path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
+                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
+                <path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="3"/>
+                <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
+                <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
+              </g>
+            </svg>
+            <span>EN</span>
+          </button>
+          <button type="button" class="lang-btn" data-lang="es" title="Español">
+            <svg class="flag-icon" viewBox="0 0 60 40" width="16" height="11">
+              <rect width="60" height="40" fill="#AA151B"/>
+              <rect y="10" width="60" height="20" fill="#F1BF00"/>
+            </svg>
+            <span>ES</span>
+          </button>
+        </div>
+        <button type="button" class="icon-btn" id="btn-methodology" title="Metodología y Reglas GIA">
+          Metodología
+        </button>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="icon-btn" title="Código abierto en GitHub">
+          GitHub
+        </a>
+      </div>
+    </header>
+
+    <!-- Setup Panel -->
+    <main id="panel-setup" class="panel">
+      <div class="section-intro">
+        <h2 id="hero-title">Cognitive Speed Simulator</h2>
+        <p id="hero-sub">Train with psychometric precision across the 5 official Thomas International GIA batteries.</p>
+      </div>
+
+      <div class="battery-grid" id="battery-grid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <div class="setup-settings">
+        <div class="setting-group">
+          <label for="duration-select" id="duration-label">Block Duration</label>
+          <select id="duration-select">
+            <option value="150" selected>2.5 minutes (Official GIA Standard)</option>
+            <option value="120">2.0 minutes (Numerical Standard)</option>
+            <option value="60">1.0 minute (Express Sprint)</option>
+            <option value="180">3.0 minutes</option>
+            <option value="300">5.0 minutes (Endurance)</option>
+            <option value="0">No limit (Free practice)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="info-box" id="battery-hint">
+        <!-- Battery description and key hints rendered dynamically -->
+      </div>
+
+      <button type="button" class="btn-primary" id="start-btn">
+        Start Training
+      </button>
+    </main>
+
+    <!-- Active Session Panel -->
+    <div id="panel-session" class="panel" style="display: none;">
+      <div class="session-header">
+        <div class="battery-pill">
+          <span class="name" id="session-battery-name">Number Speed</span>
+          <span class="key-help" id="session-key-help">Keys 1, 2, 3</span>
+        </div>
+        <div class="session-controls">
+          <span class="session-timer" id="session-clock">2:30</span>
+          <button type="button" class="btn-end" id="end-session-btn">End</button>
+        </div>
+      </div>
+
+      <!-- High-Frequency Progress Timer Bar -->
+      <div class="timer-bar-track">
+        <div class="timer-bar-fill" id="timer-bar-fill"></div>
+      </div>
+
+      <!-- Question Viewport -->
+      <div class="q-viewport" id="q-viewport">
+        <!-- Question DOM injected here by renderer.js -->
+      </div>
+
+      <!-- Realtime Session HUD -->
+      <div class="session-stats-hud">
+        <div class="hud-stat">
+          <div class="val" id="hud-score">0.0</div>
+          <div class="lbl" id="hud-lbl-score">Net Score</div>
+        </div>
+        <div class="hud-stat">
+          <div class="val" id="hud-accuracy">100%</div>
+          <div class="lbl" id="hud-lbl-accuracy">Accuracy</div>
+        </div>
+        <div class="hud-stat">
+          <div class="val" id="hud-total">0/0</div>
+          <div class="lbl" id="hud-lbl-total">Score</div>
+        </div>
+        <div class="hud-stat">
+          <div class="val" id="hud-qpm">0</div>
+          <div class="lbl" id="hud-lbl-qpm">Items / min</div>
+        </div>
+        <div class="hud-stat">
+          <div class="val" id="hud-streak">0</div>
+          <div class="lbl" id="hud-lbl-streak">Streak</div>
+        </div>
+        <div class="hud-stat">
+          <div class="val" id="hud-avg-rt">–</div>
+          <div class="lbl" id="hud-lbl-latency">Latency</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Report Panel -->
+    <div id="panel-summary" class="panel" style="display: none;">
+      <!-- Summary report rendered dynamically by app.js -->
+    </div>
+  </div>
+
+  <!-- Methodology Modal Dialog -->
+  <div class="modal-backdrop" id="info-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Thomas GIA Official Specification & Methodology</h3>
+        <button type="button" class="modal-close-btn" id="modal-close-btn" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body">
+        <!-- Injected dynamically by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Entry Script -->
+  <script type="module" src="src/ui/app.js"></script>
+</body>
+</html>

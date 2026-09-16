@@ -1,0 +1,121 @@
+/**
+ * Unit Test Suite for GIA Trainer Core Procedural Generators
+ */
+
+import assert from 'node:assert';
+import {
+  generateQuestion,
+  generateReasoningQuestion,
+  generatePerceptualQuestion,
+  generateNumberSpeedQuestion,
+  generateWordMeaningQuestion,
+  generateSpatialQuestion,
+  BATTERIES
+} from '../src/core/index.js';
+
+console.log('Starting GIA Core procedural validation test...');
+
+const ITERATIONS = 1000;
+
+// 1. Number Speed & Accuracy Test
+console.log(`Testing Number Speed & Accuracy (${ITERATIONS} iterations)...`);
+for (let i = 0; i < ITERATIONS; i++) {
+  const q = generateNumberSpeedQuestion();
+  assert.strictEqual(q.type, 'number-speed');
+  assert.strictEqual(q.options.length, 3);
+  const nums = q.data.numbers;
+  assert.strictEqual(nums.length, 3);
+
+  const { min, mid, max, dMin, dMax, furthest } = q.data;
+  assert(min < mid && mid < max, `Ordering failed: min=${min}, mid=${mid}, max=${max}`);
+  assert.notStrictEqual(dMin, dMax, `Equal distances detected: dMin=${dMin}, dMax=${dMax}`);
+  assert.strictEqual(dMin, mid - min);
+  assert.strictEqual(dMax, max - mid);
+
+  const expectedFurthest = dMin > dMax ? min : max;
+  assert.strictEqual(furthest, expectedFurthest);
+  assert.strictEqual(q.correctId, String(expectedFurthest));
+}
+console.log('Number Speed & Accuracy passed!');
+
+// 2. Perceptual Speed Test
+console.log(`Testing Perceptual Speed (${ITERATIONS} iterations)...`);
+for (let i = 0; i < ITERATIONS; i++) {
+  const q = generatePerceptualQuestion();
+  assert.strictEqual(q.type, 'perceptual');
+  assert.strictEqual(q.options.length, 5);
+  const pairs = q.data.pairs;
+  assert.strictEqual(pairs.length, 4);
+
+  let manualMatchCount = 0;
+  for (const pair of pairs) {
+    const isSameChar = pair.top.toLowerCase() === pair.bottom.toLowerCase();
+    assert.strictEqual(pair.isMatch, isSameChar);
+    if (pair.isMatch) manualMatchCount++;
+  }
+  assert.strictEqual(q.data.matchCount, manualMatchCount);
+  assert.strictEqual(q.correctId, String(manualMatchCount));
+}
+console.log('Perceptual Speed passed!');
+
+// 3. Reasoning Test
+console.log(`Testing Reasoning (${ITERATIONS} iterations)...`);
+for (let i = 0; i < ITERATIONS; i++) {
+  const q = generateReasoningQuestion();
+  assert.strictEqual(q.type, 'reasoning');
+  assert.strictEqual(q.hasTwoPhases, true);
+  assert(q.premise.length > 5);
+  assert(q.prompt.length > 5);
+  assert.strictEqual(q.options.length, 2);
+
+  const { personA, personB, aIsGreaterThanB, askPositive } = q.data;
+  const expectedWinner = askPositive
+    ? (aIsGreaterThanB ? personA : personB)
+    : (aIsGreaterThanB ? personB : personA);
+
+  assert.strictEqual(q.correctId, expectedWinner);
+}
+console.log('Reasoning passed!');
+
+// 4. Word Meaning Test
+console.log(`Testing Word Meaning (${ITERATIONS} iterations)...`);
+for (let i = 0; i < ITERATIONS; i++) {
+  const q = generateWordMeaningQuestion();
+  assert.strictEqual(q.type, 'word-meaning');
+  assert.strictEqual(q.options.length, 3);
+  assert.strictEqual(q.data.words.length, 3);
+  assert(q.data.words.includes(q.correctId));
+  assert.strictEqual(q.correctId, q.data.distractor);
+  assert(!q.data.pair.includes(q.data.distractor));
+}
+console.log('Word Meaning passed!');
+
+// 5. Spatial Visualisation Test
+console.log(`Testing Spatial Visualisation (${ITERATIONS} iterations)...`);
+for (let i = 0; i < ITERATIONS; i++) {
+  const q = generateSpatialQuestion();
+  assert.strictEqual(q.type, 'spatial');
+  assert.strictEqual(q.options.length, 3);
+  assert.strictEqual(q.data.boxes.length, 2);
+
+  let manualMatchCount = 0;
+  for (const box of q.data.boxes) {
+    // A box is a match if mirrored is false on bottom
+    const isMatch = !box.bottom.mirrored;
+    assert.strictEqual(box.isMatch, isMatch);
+    if (isMatch) manualMatchCount++;
+  }
+  assert.strictEqual(q.data.matchCount, manualMatchCount);
+  assert.strictEqual(q.correctId, String(manualMatchCount));
+}
+console.log('Spatial Visualisation passed!');
+
+// 6. Mixed battery test
+console.log('Testing Mixed Battery generator...');
+for (let i = 0; i < 100; i++) {
+  const q = generateQuestion('mixed');
+  assert(Object.values(BATTERIES).includes(q.type));
+}
+console.log('Mixed Battery generator passed!');
+
+console.log('ALL 5 BATERIES PASSED 1,000 ITERATIONS RIGOROUSLY WITH 0 FAILURES!');
