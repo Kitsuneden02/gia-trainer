@@ -269,4 +269,37 @@ assert.strictEqual(getSessionHistory().length, 0);
 assert.deepStrictEqual(getPersonalBests(), {});
 console.log('Storage Engine passed!');
 
-console.log('ALL 5 BATTERIES + STORAGE ENGINE PASSED RIGOROUSLY WITH 0 FAILURES!');
+// 8. I18N Summary Reporting Test (Ensure no undefined functions or variables in en/es summary)
+console.log('Testing I18N Summary report generation across languages...');
+const { I18N } = await import('../src/data/i18n.js');
+for (const lang of ['en', 'es']) {
+  const sumT = I18N[lang].summary;
+  assert(sumT.title.length > 0);
+  assert(typeof sumT.meta === 'function');
+  assert(typeof sumT.heroSub === 'function');
+  assert(typeof sumT.adviceExcellent === 'function');
+  assert(typeof sumT.adviceBalanced === 'function');
+  assert(typeof sumT.adviceCaution === 'function');
+  assert(typeof sumT.targetSpec === 'function');
+  assert(typeof sumT.targetGap === 'function');
+  assert(typeof sumT.targetActual === 'function');
+  assert(typeof sumT.targetAccuracyWarning === 'function');
+  assert(sumT.targetAchieved.length > 0);
+  assert(sumT.targetMissed.length > 0);
+
+  // Test targetGap branches
+  assert(sumT.targetGap(-3.6).includes('3.6'));
+  assert(sumT.targetGap(2.4).includes('2.4'));
+  assert(sumT.targetGap(0).length > 0);
+
+  // Test targetSpec and actual
+  const spec = sumT.targetSpec(28, 90);
+  assert(spec.includes('28'));
+  const actual = sumT.targetActual(24.4, 80);
+  assert(actual.includes('24.4'));
+  const warn = sumT.targetAccuracyWarning(80, 90);
+  assert(warn.includes('80') && warn.includes('90'));
+}
+console.log('I18N Summary report generation passed!');
+
+console.log('ALL 5 BATTERIES + STORAGE ENGINE + I18N PASSED RIGOROUSLY WITH 0 FAILURES!');

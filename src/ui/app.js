@@ -523,6 +523,7 @@ function renderSummaryReport(summary) {
     const gap = Math.round(rawGap * 10) / 10;
     const isSuccess = targetMet;
     const badgeClass = isSuccess ? 'met' : 'missed';
+    const badgeText = isSuccess ? sumT.targetAchieved : sumT.targetMissed;
     const gapText = sumT.targetGap(gap);
     const actualText = sumT.targetActual ? sumT.targetActual(stats.throughputQpm, stats.accuracy) : `Actual: ${stats.throughputQpm} QPM (${stats.accuracy}%)`;
     const specText = sumT.targetSpec ? sumT.targetSpec(bench.targetQpm, bench.targetAcc) : `${bench.targetQpm} Net QPM (≥${bench.targetAcc}% Acc)`;
