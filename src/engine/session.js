@@ -37,9 +37,14 @@ export class SessionEngine {
     this.questionStartTime = 0;
     this.premiseStartTime = 0;
     this.premiseDurationMs = 0;
+    this.pausedAt = 0;
+    this.totalPausedDurationMs = 0;
     this.rafId = null;
 
     this.tick = this.tick.bind(this);
+    this.pause = this.pause.bind(this);
+    this.resume = this.resume.bind(this);
+    this.abort = this.abort.bind(this);
   }
 
   /**
@@ -83,6 +88,57 @@ export class SessionEngine {
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
+    }
+  }
+
+  /**
+   * Pauses the running session and freezes the timer.
+   */
+  pause() {
+    if (this.status !== 'running') return;
+    this.status = 'paused';
+    this.pausedAt = performance.now();
+    this.stopTimerLoop();
+    if (this.callbacks.onPause) {
+      this.callbacks.onPause();
+    }
+  }
+
+  /**
+   * Resumes a paused session, adjusting start/end timestamps by the paused duration.
+   */
+  resume() {
+    if (this.status !== 'paused') return;
+    const now = performance.now();
+    const pauseDelta = now - this.pausedAt;
+
+    this.sessionStartTime += pauseDelta;
+    if (this.sessionEndTime > 0) {
+      this.sessionEndTime += pauseDelta;
+    }
+    this.questionStartTime += pauseDelta;
+    if (this.premiseStartTime > 0 && this.phase === 'read') {
+      this.premiseStartTime += pauseDelta;
+    }
+    this.totalPausedDurationMs += pauseDelta;
+    this.pausedAt = 0;
+    this.status = 'running';
+
+    if (this.callbacks.onResume) {
+      this.callbacks.onResume();
+    }
+    this.startTimerLoop();
+  }
+
+  /**
+   * Aborts the session without saving results.
+   */
+  abort() {
+    this.status = 'aborted';
+    this.phase = 'idle';
+    this.stopTimerLoop();
+    if (this.callbacks.onAbort) {
+      this.callbacks.onAbort();
     }
   }
 

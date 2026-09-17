@@ -312,7 +312,63 @@ for (const lang of ['en', 'es']) {
   assert(actual.includes('24.4'));
   const warn = sumT.targetAccuracyWarning(80, 90);
   assert(warn.includes('80') && warn.includes('90'));
+  // Test abortModal and history keys
+  assert(I18N[lang].abortModal.title.length > 0);
+  assert(I18N[lang].abortModal.desc.length > 0);
+  assert(I18N[lang].abortModal.resumeBtn.length > 0);
+  assert(I18N[lang].abortModal.confirmBtn.length > 0);
+  assert(I18N[lang].history.chartNetScore.length > 0);
+  assert(I18N[lang].history.chartQpm.length > 0);
+  assert(I18N[lang].history.chartAccuracy.length > 0);
 }
 console.log('I18N Summary report generation passed!');
 
-console.log('ALL 5 BATTERIES + STORAGE ENGINE + I18N PASSED RIGOROUSLY WITH 0 FAILURES!');
+// 9. SessionEngine Lifecycle & Pause / Resume / Abort Test
+console.log('Testing SessionEngine lifecycle (pause, resume, abort)...');
+if (!globalThis.requestAnimationFrame) {
+  globalThis.requestAnimationFrame = (cb) => setTimeout(() => cb(performance.now()), 16);
+  globalThis.cancelAnimationFrame = (id) => clearTimeout(id);
+}
+const { SessionEngine } = await import('../src/engine/session.js');
+let pausedEmitted = false;
+let resumedEmitted = false;
+let abortedEmitted = false;
+
+const engine = new SessionEngine({
+  battery: 'number-speed',
+  durationSec: 150,
+  callbacks: {
+    onPause: () => { pausedEmitted = true; },
+    onResume: () => { resumedEmitted = true; },
+    onAbort: () => { abortedEmitted = true; }
+  }
+});
+
+engine.start();
+assert.strictEqual(engine.status, 'running');
+assert.strictEqual(engine.items.length, 0);
+
+const initialStartTime = engine.sessionStartTime;
+
+// Test Pause
+engine.pause();
+assert.strictEqual(engine.status, 'paused');
+assert.strictEqual(pausedEmitted, true);
+assert(engine.pausedAt > 0);
+
+// Wait 50ms then test Resume
+await new Promise((r) => setTimeout(r, 50));
+engine.resume();
+assert.strictEqual(engine.status, 'running');
+assert.strictEqual(resumedEmitted, true);
+assert.strictEqual(engine.pausedAt, 0);
+assert(engine.totalPausedDurationMs >= 40);
+assert(engine.sessionStartTime > initialStartTime);
+
+// Test Abort
+engine.abort();
+assert.strictEqual(engine.status, 'aborted');
+assert.strictEqual(abortedEmitted, true);
+console.log('SessionEngine lifecycle passed!');
+
+console.log('ALL 5 BATTERIES + STORAGE ENGINE + SESSION ENGINE + I18N PASSED RIGOROUSLY WITH 0 FAILURES!');

@@ -144,6 +144,25 @@ export const I18N = {
       adviceBalanced: (acc, qpm, rt) => `<strong>Solid balance (${acc}% accuracy).</strong> You maintain a competitive throughput (${qpm} items/min). Focus on instant pattern recognition to reduce latency (${rt} ms).`,
       adviceCaution: (acc) => `<strong>Caution with the guessing penalty (-0.5 pts per error).</strong> Your accuracy was ${acc}%. Remember that in the GIA, blind guessing heavily penalizes your net standing. Slow down slightly to verify each item.`
     },
+    abortModal: {
+      title: 'Leave Current Session?',
+      desc: 'The test is currently paused. If you return to the home screen now, this session will terminate immediately and will not be saved to your history.',
+      resumeBtn: 'Continue Test',
+      confirmBtn: 'Exit to Home'
+    },
+    history: {
+      allTab: 'All Sessions',
+      sessionsCount: (n) => `${n} sessions`,
+      pbLabel: 'Personal Best',
+      avgQpm: 'Avg Speed',
+      avgAccuracy: 'Avg Accuracy',
+      chartNetScore: 'Net Score Trend',
+      chartQpm: 'Speed / QPM Trend',
+      chartAccuracy: 'Accuracy Trend',
+      noDataBattery: 'No sessions recorded yet for this battery.',
+      sessionWord: 'Session',
+      latestLabel: 'Latest'
+    },
     modal: {
       title: 'Thomas GIA Official Specification & Methodology',
       p1: 'The <strong>Thomas International General Intelligence Assessment (GIA)</strong> is a speeded cognitive ability test derived from the <em>British Army Recruit Battery (BARB)</em>. It measures fluid mental processing speed, short-term working memory, and rapid instruction execution.',
@@ -302,6 +321,25 @@ export const I18N = {
       adviceExcellent: (acc) => `<strong>¡Excelente precisión (${acc}%)!</strong> Tu control de errores es formidable. En el GIA oficial puedes empujar un 10-15% más de velocidad sin temer a la penalización.`,
       adviceBalanced: (acc, qpm, rt) => `<strong>Buen balance (${acc}% de precisión).</strong> Mantienes un throughput competitivo (${qpm} preg/min). Trabaja en reconocer patrones de forma automática para reducir la latencia (${rt} ms).`,
       adviceCaution: (acc) => `<strong>Precaución con la penalización (-0.5 pts por fallo).</strong> Tu precisión fue del ${acc}%. Recuerda que en el GIA las conjeturas al azar destruyen tu puntaje neto. Disminuye ligeramente la prisa mecánica y asegura la confirmación mental de cada ítem.`
+    },
+    abortModal: {
+      title: '¿Abandonar la prueba?',
+      desc: 'La prueba se encuentra en pausa. Si vuelves al inicio ahora, la sesión terminará inmediatamente y no se registrará en tu historial.',
+      resumeBtn: 'Continuar Prueba',
+      confirmBtn: 'Salir al Inicio'
+    },
+    history: {
+      allTab: 'Todas las sesiones',
+      sessionsCount: (n) => `${n} sesiones`,
+      pbLabel: 'Récord Personal',
+      avgQpm: 'Ritmo Promedio',
+      avgAccuracy: 'Precisión Promedio',
+      chartNetScore: 'Evolución Puntaje Neto',
+      chartQpm: 'Evolución Ritmo (QPM)',
+      chartAccuracy: 'Evolución Precisión (%)',
+      noDataBattery: 'Aún no hay sesiones registradas para esta batería.',
+      sessionWord: 'Sesión',
+      latestLabel: 'Último'
     },
     modal: {
       title: 'Metodología y Especificación Oficial Thomas GIA',
