@@ -100,6 +100,7 @@ function getActiveBenchmark() {
 // State
 let selectedBattery = BATTERIES.NUMBER_SPEED;
 let activeHistoryTab = BATTERIES.NUMBER_SPEED;
+let filterOutDroppedSessions = true;
 let currentLang = 'en';
 let currentEngine = null;
 let renderer = new QuestionRenderer(elQViewport, currentLang);
@@ -612,7 +613,7 @@ function renderSummaryReport(summary) {
 }
 
 /**
- * Generates an interactive, responsive SVG line & area chart with native tooltips.
+ * Generates an interactive, responsive SVG line & area chart with native tooltips and clamped coordinates.
  */
 function generateSvgTrendChart({ data, color = '#0284c7', targetValue = null, suffix = '', fixedMin = null, fixedMax = null }) {
   if (!data || data.length === 0) {
@@ -620,35 +621,41 @@ function generateSvgTrendChart({ data, color = '#0284c7', targetValue = null, su
   }
 
   const width = 280;
-  const height = 130;
-  const padLeft = 32;
+  const height = 155;
+  const padLeft = 38;
   const padRight = 16;
-  const padTop = 16;
+  const padTop = 18;
   const padBottom = 26;
   const chartW = width - padLeft - padRight;
   const chartH = height - padTop - padBottom;
 
   const vals = data.map(d => Number(d.value));
-  let minVal = fixedMin !== null ? fixedMin : Math.min(...vals);
-  let maxVal = fixedMax !== null ? fixedMax : Math.max(...vals);
+  let minVal = Math.min(...vals);
+  let maxVal = Math.max(...vals);
+
+  // When fixedMin/fixedMax are specified (e.g. 0-100% for accuracy), respect them but clamp to encompass any outliers
+  if (fixedMin !== null) minVal = Math.min(minVal, fixedMin);
+  if (fixedMax !== null) maxVal = Math.max(maxVal, fixedMax);
 
   if (targetValue !== null) {
     minVal = Math.min(minVal, targetValue);
     maxVal = Math.max(maxVal, targetValue);
   }
 
-  // Ensure reasonable vertical spread
+  // Ensure reasonable vertical spread without zero division
   if (minVal === maxVal) {
     minVal = Math.max(0, minVal - 5);
     maxVal = maxVal + 5;
   } else {
     const spread = maxVal - minVal;
-    if (fixedMin === null) minVal = Math.max(0, minVal - spread * 0.1);
-    if (fixedMax === null) maxVal = maxVal + spread * 0.1;
+    if (fixedMin === null) minVal = Math.max(0, minVal - spread * 0.08);
+    if (fixedMax === null) maxVal = maxVal + spread * 0.08;
   }
 
   const getY = (val) => {
-    const norm = (val - minVal) / (maxVal - minVal);
+    const rawNorm = (maxVal === minVal) ? 0.5 : (val - minVal) / (maxVal - minVal);
+    // Strict clamp between 0.0 and 1.0 ensures lines NEVER escape the chart box
+    const norm = Math.max(0, Math.min(1, rawNorm));
     return padTop + (1 - norm) * chartH;
   };
 
@@ -680,14 +687,17 @@ function generateSvgTrendChart({ data, color = '#0284c7', targetValue = null, su
   if (targetValue !== null && targetValue >= minVal && targetValue <= maxVal) {
     const tY = getY(targetValue);
     targetLineSvg = `
-      <line x1="${padLeft}" y1="${tY.toFixed(1)}" x2="${width - padRight}" y2="${tY.toFixed(1)}" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.8" />
-      <text x="${width - padRight}" y="${(tY - 3).toFixed(1)}" fill="#f59e0b" font-size="9" font-family="monospace" text-anchor="end">${targetValue}${suffix}</text>
+      <line x1="${padLeft}" y1="${tY.toFixed(1)}" x2="${width - padRight}" y2="${tY.toFixed(1)}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.9" />
+      <text x="${width - padRight}" y="${(tY - 4).toFixed(1)}" fill="#fbbf24" font-size="11" font-weight="700" font-family="var(--mono)" text-anchor="end">${targetValue}${suffix}</text>
     `;
   }
 
+  // Midpoint reference grid line
+  const midY = padTop + chartH / 2;
+
   // Dots with hover title tooltips
   const dotsSvg = points.map((p) => `
-    <circle class="chart-point" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="${color}" stroke="#090d12" stroke-width="2">
+    <circle class="chart-point" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="${color}" stroke="#090d12" stroke-width="2">
       <title>${p.label}: ${p.val}${suffix} (${p.date})</title>
     </circle>
   `).join('');
@@ -700,17 +710,18 @@ function generateSvgTrendChart({ data, color = '#0284c7', targetValue = null, su
       <svg class="chart-svg" viewBox="0 0 ${width} ${height}">
         <defs>
           <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="${color}" stop-opacity="0.35" />
+            <stop offset="0%" stop-color="${color}" stop-opacity="0.38" />
             <stop offset="100%" stop-color="${color}" stop-opacity="0.0" />
           </linearGradient>
         </defs>
-        <!-- Grid horizontal lines -->
-        <line x1="${padLeft}" y1="${padTop}" x2="${width - padRight}" y2="${padTop}" stroke="var(--border)" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.4" />
+        <!-- Horizontal grid guides -->
+        <line x1="${padLeft}" y1="${padTop}" x2="${width - padRight}" y2="${padTop}" stroke="var(--border)" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.35" />
+        <line x1="${padLeft}" y1="${midY}" x2="${width - padRight}" y2="${midY}" stroke="var(--border)" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.2" />
         <line x1="${padLeft}" y1="${bottomY}" x2="${width - padRight}" y2="${bottomY}" stroke="var(--border)" stroke-width="1" opacity="0.6" />
         
-        <!-- Y-axis text labels -->
-        <text x="${padLeft - 6}" y="${padTop + 4}" fill="var(--text-dim)" font-size="9" font-family="monospace" text-anchor="end">${maxLabel}</text>
-        <text x="${padLeft - 6}" y="${bottomY - 2}" fill="var(--text-dim)" font-size="9" font-family="monospace" text-anchor="end">${minLabel}</text>
+        <!-- Y-axis text labels (large, high-contrast, legible) -->
+        <text x="${padLeft - 6}" y="${padTop + 4}" fill="var(--text-muted)" font-size="11" font-weight="700" font-family="var(--mono)" text-anchor="end">${maxLabel}</text>
+        <text x="${padLeft - 6}" y="${bottomY - 2}" fill="var(--text-muted)" font-size="11" font-weight="700" font-family="var(--mono)" text-anchor="end">${minLabel}</text>
 
         <!-- Benchmark / Target Line -->
         ${targetLineSvg}
@@ -725,8 +736,8 @@ function generateSvgTrendChart({ data, color = '#0284c7', targetValue = null, su
         ${dotsSvg}
 
         <!-- X-axis index labels -->
-        <text x="${points[0].x.toFixed(1)}" y="${height - 8}" fill="var(--text-dim)" font-size="9" font-family="monospace" text-anchor="start">#1</text>
-        <text x="${points[points.length - 1].x.toFixed(1)}" y="${height - 8}" fill="var(--text-dim)" font-size="9" font-family="monospace" text-anchor="end">#${points.length}</text>
+        <text x="${points[0].x.toFixed(1)}" y="${height - 8}" fill="var(--text-muted)" font-size="11" font-weight="600" font-family="var(--mono)" text-anchor="start">#1</text>
+        <text x="${points[points.length - 1].x.toFixed(1)}" y="${height - 8}" fill="var(--text-muted)" font-size="11" font-weight="600" font-family="var(--mono)" text-anchor="end">#${points.length}</text>
       </svg>
     </div>
   `;
@@ -740,42 +751,82 @@ function renderHistoryModalContent() {
   const sumT = t.summary;
   const histT = t.history || {};
   const pbs = getPersonalBests();
-  const history = getSessionHistory();
+  const rawHistory = getSessionHistory();
+  const totalRawCount = rawHistory.length;
 
-  const batteries = [
+  // Filter out dropped / abandoned sessions (<25s duration or <8 questions answered)
+  const history = filterOutDroppedSessions
+    ? rawHistory.filter((s) => (s.elapsedSec >= 25 || s.durationSec === 0 || s.total >= 8))
+    : rawHistory;
+
+  const droppedCount = totalRawCount - history.length;
+
+  const batteryKeys = [
     BATTERIES.NUMBER_SPEED,
     BATTERIES.PERCEPTUAL,
     BATTERIES.REASONING,
     BATTERIES.WORD_MEANING,
     BATTERIES.SPATIAL,
-    'mixed'
+    'mixed',
+    'all'
   ];
 
-  if (!batteries.includes(activeHistoryTab)) {
+  if (!batteryKeys.includes(activeHistoryTab)) {
     activeHistoryTab = BATTERIES.NUMBER_SPEED;
   }
 
-  // 1. Tab buttons
+  // 1. Tab buttons with individual session count
   const tabsHTML = `
     <div class="history-tabs" role="tablist">
-      ${batteries.map((batKey) => {
-        const bInfo = t.batteries[batKey];
-        const name = bInfo ? (bInfo.shortName || bInfo.name) : batKey;
+      ${batteryKeys.map((batKey) => {
+        let name = '';
+        let count = 0;
+        if (batKey === 'all') {
+          name = currentLang === 'es' ? 'Todas' : 'All';
+          count = history.length;
+        } else {
+          const bInfo = t.batteries[batKey];
+          name = bInfo ? (bInfo.shortName || bInfo.name) : batKey;
+          count = history.filter((s) => s.battery === batKey).length;
+        }
         const isActive = batKey === activeHistoryTab;
         return `
           <button type="button" class="history-tab-btn ${isActive ? 'active' : ''}" data-battery="${batKey}" role="tab" aria-selected="${isActive}">
-            ${name}
+            ${name} (${count})
           </button>
         `;
       }).join('')}
     </div>
   `;
 
-  // 2. Filter sessions for active battery
-  const newestBatteryHistory = history.filter((item) => item.battery === activeHistoryTab);
+  // 2. Filter Bar with Toggle for Dropped Sessions
+  const droppedBadge = droppedCount > 0
+    ? `<span style="color:var(--amber); font-weight:600; margin-left:6px;">(${droppedCount} ${currentLang === 'es' ? 'ocultas' : 'hidden'})</span>`
+    : '';
+
+  const activeSessions = activeHistoryTab === 'all'
+    ? history
+    : history.filter((item) => item.battery === activeHistoryTab);
+
+  const filterBarHTML = `
+    <div class="history-filter-bar">
+      <label class="filter-checkbox-label">
+        <input type="checkbox" id="chk-filter-dropped" ${filterOutDroppedSessions ? 'checked' : ''}>
+        <span>${currentLang === 'es' ? 'Excluir sesiones descartadas (<25s)' : 'Filter out dropped sessions (<25s)'}${droppedBadge}</span>
+      </label>
+      <span class="history-count-meta">
+        ${activeSessions.length} ${currentLang === 'es' ? 'mostradas' : 'shown'} • ${totalRawCount} ${currentLang === 'es' ? 'totales en memoria' : 'total stored'}
+      </span>
+    </div>
+  `;
+
+  // 3. Filter sessions for active view
+  const newestBatteryHistory = activeSessions;
   const chronologicalBatteryHistory = newestBatteryHistory.slice().reverse();
-  const pb = pbs[activeHistoryTab];
   const totalSessions = newestBatteryHistory.length;
+
+  // Best session finder
+  const bestSession = newestBatteryHistory.reduce((best, cur) => (!best || cur.netScore > best.netScore ? cur : best), null);
 
   const avgQpm = totalSessions > 0
     ? (newestBatteryHistory.reduce((a, b) => a + Number(b.throughputQpm || 0), 0) / totalSessions).toFixed(1)
@@ -783,36 +834,41 @@ function renderHistoryModalContent() {
   const avgAcc = totalSessions > 0
     ? Math.round(newestBatteryHistory.reduce((a, b) => a + Number(b.accuracy || 0), 0) / totalSessions) + '%'
     : '–';
-  const bestNet = pb ? pb.netScore : '–';
 
-  // 3. Hero summary stats for active battery
+  // 4. Hero summary stats for active battery
+  const pbValText = bestSession ? `${bestSession.netScore} pts` : '–';
+  const pbSubText = bestSession
+    ? `${bestSession.correct}/${bestSession.total} • ${bestSession.accuracy}% Prec • ${bestSession.throughputQpm} QPM • ${bestSession.avgRtMs}ms`
+    : '–';
+
   const heroStatsHTML = `
     <div class="history-hero-stats">
       <div class="history-hero-card">
         <div class="val">${totalSessions}</div>
-        <div class="lbl">${currentLang === 'es' ? 'Sesiones' : 'Sessions'}</div>
+        <div class="lbl">${currentLang === 'es' ? 'Sesiones Válidas' : 'Valid Sessions'}</div>
+      </div>
+      <div class="history-hero-card pb-card">
+        <div class="val" style="color:#fbbf24;">${pbValText} 🏆</div>
+        <div class="val-sub" title="${pbSubText}">${pbSubText}</div>
+        <div class="lbl">${histT.pbLabel || (currentLang === 'es' ? 'Mejor Corrida' : 'Personal Best')}</div>
       </div>
       <div class="history-hero-card">
-        <div class="val" style="color:var(--accent);">${bestNet}</div>
-        <div class="lbl">${histT.pbLabel || 'Personal Best'}</div>
-      </div>
-      <div class="history-hero-card">
-        <div class="val" style="color:#a78bfa;">${avgQpm}</div>
-        <div class="lbl">${histT.avgQpm || 'Avg Speed (QPM)'}</div>
+        <div class="val" style="color:#a78bfa;">${avgQpm} QPM</div>
+        <div class="lbl">${histT.avgQpm || (currentLang === 'es' ? 'Ritmo Promedio' : 'Avg Speed')}</div>
       </div>
       <div class="history-hero-card">
         <div class="val" style="color:#34d399;">${avgAcc}</div>
-        <div class="lbl">${histT.avgAccuracy || 'Avg Accuracy'}</div>
+        <div class="lbl">${histT.avgAccuracy || (currentLang === 'es' ? 'Precisión Promedio' : 'Avg Accuracy')}</div>
       </div>
     </div>
   `;
 
-  // 4. Trend charts
+  // 5. Trend charts
   let chartsHTML = '';
   if (totalSessions === 0) {
     chartsHTML = `
       <div style="background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius); padding:28px 16px; text-align:center; color:var(--text-muted); margin-bottom:24px;">
-        <p>${histT.noDataBattery || (currentLang === 'es' ? 'Aún no hay sesiones registradas para esta batería.' : 'No sessions recorded yet for this battery.')}</p>
+        <p>${histT.noDataBattery || (currentLang === 'es' ? 'Aún no hay sesiones registradas para esta vista.' : 'No sessions recorded yet for this view.')}</p>
       </div>
     `;
   } else {
@@ -846,14 +902,14 @@ function renderHistoryModalContent() {
         <div class="chart-card">
           <div class="chart-card-header">
             <h5>${histT.chartNetScore || 'Net Score'}</h5>
-            <span class="latest-val" style="color:#38bdf8;">${latestNet}</span>
+            <span class="latest-val" style="color:#38bdf8;">${latestNet} pts</span>
           </div>
-          ${generateSvgTrendChart({ data: netScorePoints, color: '#38bdf8', suffix: ' pts', targetValue: pb ? pb.netScore : null })}
+          ${generateSvgTrendChart({ data: netScorePoints, color: '#38bdf8', suffix: ' pts', targetValue: bestSession ? bestSession.netScore : null })}
         </div>
         <div class="chart-card">
           <div class="chart-card-header">
             <h5>${histT.chartQpm || 'Speed / QPM'}</h5>
-            <span class="latest-val" style="color:#a78bfa;">${latestQpm}</span>
+            <span class="latest-val" style="color:#a78bfa;">${latestQpm} QPM</span>
           </div>
           ${generateSvgTrendChart({ data: qpmPoints, color: '#a78bfa', suffix: ' QPM', targetValue: qpmTarget })}
         </div>
@@ -862,21 +918,84 @@ function renderHistoryModalContent() {
             <h5>${histT.chartAccuracy || 'Accuracy (%)'}</h5>
             <span class="latest-val" style="color:#34d399;">${latestAcc}</span>
           </div>
-          ${generateSvgTrendChart({ data: accPoints, color: '#34d399', suffix: '%', targetValue: 90, fixedMin: 60, fixedMax: 100 })}
+          ${generateSvgTrendChart({ data: accPoints, color: '#34d399', suffix: '%', targetValue: 90, fixedMin: 0, fixedMax: 100 })}
         </div>
       </div>
     `;
   }
 
-  // 5. Battery Recent Sessions Table
+  // 6. Global Personal Bests (PLACED BEFORE SESSION LOG AS REQUESTED)
+  const allStandardBatteries = [
+    BATTERIES.NUMBER_SPEED,
+    BATTERIES.PERCEPTUAL,
+    BATTERIES.REASONING,
+    BATTERIES.WORD_MEANING,
+    BATTERIES.SPATIAL,
+    'mixed'
+  ];
+
+  const pbRows = allStandardBatteries.map((batKey) => {
+    const bInfo = t.batteries[batKey];
+    const name = bInfo ? (bInfo.shortName || bInfo.name) : batKey;
+    const bPb = pbs[batKey];
+    if (!bPb) {
+      return `<tr><td><strong>${name}</strong></td><td colspan="5" style="color:var(--text-dim); text-align:center;">–</td></tr>`;
+    }
+    const d = new Date(bPb.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    const isCurrentActive = batKey === activeHistoryTab;
+    return `
+      <tr class="${isCurrentActive ? 'pb-row' : ''}">
+        <td><strong>${isCurrentActive ? '👉 ' : ''}${name}</strong></td>
+        <td><span style="color:#fbbf24; font-weight:700;">🏆 ${bPb.netScore} pts</span></td>
+        <td>${bPb.accuracy}%</td>
+        <td>${bPb.throughputQpm} QPM</td>
+        <td>${bPb.avgRtMs > 0 ? `${bPb.avgRtMs} ms` : '–'}</td>
+        <td style="font-size:12px; color:var(--text-muted);">${d}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const globalPbsHTML = `
+    <div style="margin-top:20px; margin-bottom:24px;">
+      <h4 style="font-size:14px; font-weight:700; margin-bottom:10px; color:var(--text); display:flex; align-items:center; gap:6px;">
+        <span>🏆</span> ${currentLang === 'es' ? 'Récords Personales Globales (Todas las Baterías)' : 'Global Personal Bests (All Batteries)'}
+      </h4>
+      <div class="breakdown-table-wrapper">
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>${sumT.tableBattery}</th>
+              <th>${sumT.tableNetScore}</th>
+              <th>${sumT.tableAccuracy}</th>
+              <th>QPM</th>
+              <th>${sumT.tableAvgRt || 'Latencia'}</th>
+              <th>${currentLang === 'es' ? 'Fecha' : 'Date'}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pbRows}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  // 7. Battery Recent Sessions Table
   let batteryTableHTML = '';
   if (totalSessions > 0) {
-    const histRows = newestBatteryHistory.slice(0, 10).map((item) => {
+    const histRows = newestBatteryHistory.slice(0, 15).map((item) => {
       const d = new Date(item.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
       const targetBadge = item.targetMet ? '<span style="color:var(--green); font-weight:700;">✓</span>' : '';
+      const isPb = bestSession && item.netScore === bestSession.netScore;
+      const bName = activeHistoryTab === 'all'
+        ? `<span style="font-size:11px; color:var(--text-dim); display:block;">${t.batteries[item.battery]?.shortName || item.battery}</span>`
+        : '';
       return `
-        <tr>
-          <td><strong>${item.netScore}</strong></td>
+        <tr class="${isPb ? 'pb-row' : ''}">
+          <td>
+            <strong>${isPb ? '🏆 ' : ''}${item.netScore}</strong>
+            ${bName}
+          </td>
           <td>${item.accuracy}%</td>
           <td>${item.throughputQpm} QPM</td>
           <td>${item.avgRtMs > 0 ? `${item.avgRtMs} ms` : '–'}</td>
@@ -885,8 +1004,14 @@ function renderHistoryModalContent() {
       `;
     }).join('');
 
+    const titlePrefix = activeHistoryTab === 'all'
+      ? (currentLang === 'es' ? 'Historial Completo' : 'All Sessions Log')
+      : (currentLang === 'es' ? 'Historial de Sesiones' : 'Session Log');
+
     batteryTableHTML = `
-      <h4 style="margin-top:20px; margin-bottom:10px; font-size:14px;">${currentLang === 'es' ? 'Historial de Sesiones' : 'Session Log'} (${totalSessions})</h4>
+      <h4 style="margin-top:20px; margin-bottom:10px; font-size:14px; color:var(--text);">
+        ${titlePrefix} (${totalSessions})
+      </h4>
       <div class="breakdown-table-wrapper">
         <table class="breakdown-table">
           <thead>
@@ -906,51 +1031,7 @@ function renderHistoryModalContent() {
     `;
   }
 
-  // 6. Global Personal Bests overview across all batteries
-  const pbRows = batteries.map((batKey) => {
-    const bInfo = t.batteries[batKey];
-    const name = bInfo ? (bInfo.shortName || bInfo.name) : batKey;
-    const bPb = pbs[batKey];
-    if (!bPb) {
-      return `<tr><td><strong>${name}</strong></td><td colspan="4" style="color:var(--text-dim); text-align:center;">–</td></tr>`;
-    }
-    const d = new Date(bPb.timestamp).toLocaleDateString();
-    return `
-      <tr>
-        <td><strong>${name}</strong></td>
-        <td><span style="color:var(--accent); font-weight:700;">${bPb.netScore}</span></td>
-        <td>${bPb.throughputQpm} QPM</td>
-        <td>${bPb.accuracy}%</td>
-        <td style="font-size:12px; color:var(--text-muted);">${d}</td>
-      </tr>
-    `;
-  }).join('');
-
-  const globalPbsHTML = `
-    <details style="margin-top:24px; border:1px solid var(--border); border-radius:var(--radius); padding:12px 16px; background:var(--surface);">
-      <summary style="cursor:pointer; font-weight:600; font-size:13px; color:var(--text);">
-        ${currentLang === 'es' ? '🏆 Ver Récords Personales Globales (Todas las Baterías)' : '🏆 View Global Personal Bests (All Batteries)'}
-      </summary>
-      <div class="breakdown-table-wrapper" style="margin-top:12px;">
-        <table class="breakdown-table">
-          <thead>
-            <tr>
-              <th>${sumT.tableBattery}</th>
-              <th>${sumT.tableNetScore}</th>
-              <th>QPM</th>
-              <th>${sumT.tableAccuracy}</th>
-              <th>${currentLang === 'es' ? 'Fecha' : 'Date'}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${pbRows}
-          </tbody>
-        </table>
-      </div>
-    </details>
-  `;
-
-  // 7. Clear History Action
+  // 8. Clear History Action
   const clearActionHTML = `
     <div style="margin-top:20px; display:flex; justify-content:flex-end;">
       <button type="button" class="btn-secondary" id="btn-clear-history" style="display:inline-flex; width:auto; font-size:12px; padding:6px 14px;">
@@ -959,7 +1040,7 @@ function renderHistoryModalContent() {
     </div>
   `;
 
-  elHistoryModalBody.innerHTML = `${tabsHTML}${heroStatsHTML}${chartsHTML}${batteryTableHTML}${globalPbsHTML}${clearActionHTML}`;
+  elHistoryModalBody.innerHTML = `${tabsHTML}${filterBarHTML}${heroStatsHTML}${chartsHTML}${globalPbsHTML}${batteryTableHTML}${clearActionHTML}`;
 
   // Attach tab switch events
   elHistoryModalBody.querySelectorAll('.history-tab-btn').forEach((tabBtn) => {
@@ -968,6 +1049,15 @@ function renderHistoryModalContent() {
       renderHistoryModalContent();
     };
   });
+
+  // Attach filter checkbox event
+  const chkFilter = document.getElementById('chk-filter-dropped');
+  if (chkFilter) {
+    chkFilter.onchange = (e) => {
+      filterOutDroppedSessions = e.target.checked;
+      renderHistoryModalContent();
+    };
+  }
 
   // Attach clear history button
   const btnClear = document.getElementById('btn-clear-history');
