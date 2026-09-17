@@ -31,11 +31,21 @@ export const I18N = {
         { value: 'challenge', label: 'Challenge Mode (Polyforms, 45°)' }
       ],
       targetLabel: 'Target Benchmark',
+      targetOptionLabel: (tier, qpm, acc) => {
+        switch (tier) {
+          case 'none': return 'No Target (Open practice)';
+          case 'standard': return `Standard Norm (50th %tile • ${qpm} Net QPM, ≥${acc}% Acc)`;
+          case 'top-tier': return `Top Tier / Competitive (75th+ %tile • ${qpm} Net QPM, ≥${acc}% Acc)`;
+          case 'elite': return `Elite Performers (90th+ %tile • ${qpm} Net QPM, ≥${acc}% Acc)`;
+          case 'custom': return 'Custom Target...';
+          default: return tier;
+        }
+      },
       targets: [
         { value: 'none', label: 'No Target (Open practice)' },
-        { value: 'standard', label: 'Standard Norm (50th %tile • 20 Net QPM, ≥85% Acc)' },
-        { value: 'top-tier', label: 'Top Tier / Competitive (75th+ %tile • 28 Net QPM, ≥90% Acc)' },
-        { value: 'elite', label: 'Elite Performers (86th+ %tile • 34 Net QPM, ≥95% Acc)' },
+        { value: 'standard', label: 'Standard Norm (50th %tile)' },
+        { value: 'top-tier', label: 'Top Tier / Competitive (75th+ %tile)' },
+        { value: 'elite', label: 'Elite Performers (90th+ %tile)' },
         { value: 'custom', label: 'Custom Target...' }
       ],
       customQpmLabel: 'Target Net QPM (Items/min)',
@@ -209,11 +219,21 @@ export const I18N = {
         { value: 'challenge', label: 'Modo Reto (Poliformas complejas, 45°)' }
       ],
       targetLabel: 'Meta de Rendimiento',
+      targetOptionLabel: (tier, qpm, acc) => {
+        switch (tier) {
+          case 'none': return 'Sin Meta (Práctica libre)';
+          case 'standard': return `Estándar Base (Percentil 50 • ${qpm} QPM Neto, ≥${acc}% Prec)`;
+          case 'top-tier': return `Competitivo / Nivel Alto (Percentil 75+ • ${qpm} QPM Neto, ≥${acc}% Prec)`;
+          case 'elite': return `Rendimiento Élite (Percentil 90+ • ${qpm} QPM Neto, ≥${acc}% Prec)`;
+          case 'custom': return 'Meta Personalizada...';
+          default: return tier;
+        }
+      },
       targets: [
         { value: 'none', label: 'Sin Meta (Práctica libre)' },
-        { value: 'standard', label: 'Estándar Base (Percentil 50 • 20 QPM Neto, ≥85% Prec)' },
-        { value: 'top-tier', label: 'Competitivo / Nivel Alto (Percentil 75+ • 28 QPM Neto, ≥90% Prec)' },
-        { value: 'elite', label: 'Rendimiento Élite (Percentil 86+ • 34 QPM Neto, ≥95% Prec)' },
+        { value: 'standard', label: 'Estándar Base (Percentil 50)' },
+        { value: 'top-tier', label: 'Competitivo / Nivel Alto (Percentil 75+)' },
+        { value: 'elite', label: 'Rendimiento Élite (Percentil 90+)' },
         { value: 'custom', label: 'Meta Personalizada...' }
       ],
       customQpmLabel: 'QPM Neto Objetivo (Ítems/min)',

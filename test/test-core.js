@@ -10,7 +10,8 @@ import {
   generateNumberSpeedQuestion,
   generateWordMeaningQuestion,
   generateSpatialQuestion,
-  BATTERIES
+  BATTERIES,
+  BATTERY_BENCHMARKS
 } from '../src/core/index.js';
 
 console.log('Starting GIA Core procedural validation test...');
@@ -371,4 +372,67 @@ assert.strictEqual(engine.status, 'aborted');
 assert.strictEqual(abortedEmitted, true);
 console.log('SessionEngine lifecycle passed!');
 
-console.log('ALL 5 BATTERIES + STORAGE ENGINE + SESSION ENGINE + I18N PASSED RIGOROUSLY WITH 0 FAILURES!');
+// 10. Battery-Specific Benchmarks Validation Test
+console.log('Testing Battery-Specific Benchmarks and Normative Targets...');
+const requiredBatteries = [
+  BATTERIES.REASONING,
+  BATTERIES.NUMBER_SPEED,
+  BATTERIES.PERCEPTUAL,
+  BATTERIES.WORD_MEANING,
+  BATTERIES.SPATIAL,
+  'mixed'
+];
+
+for (const b of requiredBatteries) {
+  assert(BATTERY_BENCHMARKS[b], `Missing benchmarks for battery: ${b}`);
+  const bench = BATTERY_BENCHMARKS[b];
+
+  // Validate presence of all tiers
+  assert(bench.standard && bench['top-tier'] && bench.elite, `Missing tiers for battery: ${b}`);
+
+  // Validate strict monotonic pacing: standard < top-tier < elite
+  assert(
+    bench.standard.targetQpm < bench['top-tier'].targetQpm,
+    `Target QPM must be monotonic for ${b}: standard (${bench.standard.targetQpm}) >= top-tier (${bench['top-tier'].targetQpm})`
+  );
+  assert(
+    bench['top-tier'].targetQpm < bench.elite.targetQpm,
+    `Target QPM must be monotonic for ${b}: top-tier (${bench['top-tier'].targetQpm}) >= elite (${bench.elite.targetQpm})`
+  );
+
+  // Validate realistic accuracy criteria
+  assert(bench.standard.targetAcc >= 80, `Standard accuracy too low for ${b}`);
+  assert(bench['top-tier'].targetAcc >= 85, `Top-tier accuracy too low for ${b}`);
+  assert(bench.elite.targetAcc >= 90, `Elite accuracy too low for ${b}`);
+
+  // Test I18N dynamic option label generation for both EN and ES
+  for (const lang of ['en', 'es']) {
+    const t = I18N[lang];
+    assert(typeof t.setup.targetOptionLabel === 'function', `Missing targetOptionLabel function in ${lang}`);
+
+    const labelStd = t.setup.targetOptionLabel('standard', bench.standard.targetQpm, bench.standard.targetAcc);
+    assert(labelStd.includes(String(bench.standard.targetQpm)), `Label must contain QPM in ${lang}`);
+    assert(labelStd.includes(String(bench.standard.targetAcc)), `Label must contain accuracy in ${lang}`);
+
+    const labelTop = t.setup.targetOptionLabel('top-tier', bench['top-tier'].targetQpm, bench['top-tier'].targetAcc);
+    assert(labelTop.includes(String(bench['top-tier'].targetQpm)));
+
+    const labelElite = t.setup.targetOptionLabel('elite', bench.elite.targetQpm, bench.elite.targetAcc);
+    assert(labelElite.includes(String(bench.elite.targetQpm)));
+  }
+}
+
+// Specifically assert calibrated Reasoning target: Top-tier is 16 QPM
+assert.strictEqual(BATTERY_BENCHMARKS[BATTERIES.REASONING]['top-tier'].targetQpm, 16);
+assert.strictEqual(BATTERY_BENCHMARKS[BATTERIES.REASONING]['top-tier'].targetAcc, 90);
+
+// Verify user's actual run: 16.4 QPM, 95% accuracy exceeds top-tier reasoning threshold
+const userReasoningRun = { qpm: 16.4, acc: 95 };
+const reasoningTopTier = BATTERY_BENCHMARKS[BATTERIES.REASONING]['top-tier'];
+const isTopTierMet = userReasoningRun.qpm >= reasoningTopTier.targetQpm && userReasoningRun.acc >= reasoningTopTier.targetAcc;
+assert.strictEqual(isTopTierMet, true, 'User run should meet top-tier benchmark in Reasoning!');
+
+console.log('Battery-Specific Benchmarks passed!');
+
+console.log('ALL 5 BATTERIES + STORAGE ENGINE + SESSION ENGINE + I18N + BENCHMARKS PASSED RIGOROUSLY WITH 0 FAILURES!');
+

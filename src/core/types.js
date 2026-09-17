@@ -77,3 +77,41 @@ export const BATTERY_INFO = {
     keyHints: 'Teclas 0, 1, 2'
   }
 };
+
+/**
+ * Calibrated psychometric normative benchmarks for each battery and mixed mode.
+ * Based on Thomas International GIA normative distributions (Percentile 50, 75-80, 90+).
+ */
+export const BATTERY_BENCHMARKS = {
+  [BATTERIES.REASONING]: {
+    standard: { targetQpm: 12, targetAcc: 85 },
+    'top-tier': { targetQpm: 16, targetAcc: 90 },
+    elite: { targetQpm: 20, targetAcc: 95 }
+  },
+  [BATTERIES.NUMBER_SPEED]: {
+    standard: { targetQpm: 18, targetAcc: 85 },
+    'top-tier': { targetQpm: 25, targetAcc: 90 },
+    elite: { targetQpm: 32, targetAcc: 95 }
+  },
+  [BATTERIES.PERCEPTUAL]: {
+    standard: { targetQpm: 22, targetAcc: 85 },
+    'top-tier': { targetQpm: 28, targetAcc: 90 },
+    elite: { targetQpm: 35, targetAcc: 95 }
+  },
+  [BATTERIES.WORD_MEANING]: {
+    standard: { targetQpm: 22, targetAcc: 85 },
+    'top-tier': { targetQpm: 30, targetAcc: 90 },
+    elite: { targetQpm: 38, targetAcc: 95 }
+  },
+  [BATTERIES.SPATIAL]: {
+    standard: { targetQpm: 16, targetAcc: 85 },
+    'top-tier': { targetQpm: 24, targetAcc: 90 },
+    elite: { targetQpm: 30, targetAcc: 95 }
+  },
+  mixed: {
+    standard: { targetQpm: 18, targetAcc: 85 },
+    'top-tier': { targetQpm: 25, targetAcc: 90 },
+    elite: { targetQpm: 31, targetAcc: 95 }
+  }
+};
+

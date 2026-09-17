@@ -3,7 +3,7 @@
  * Orchestrates views, state transitions, audio-visual feedback, and user interaction.
  */
 
-import { BATTERIES } from '../core/types.js';
+import { BATTERIES, BATTERY_BENCHMARKS } from '../core/types.js';
 import { I18N } from '../data/i18n.js';
 import { SessionEngine } from '../engine/session.js';
 import { KeyboardController } from '../engine/keyboard.js';
@@ -80,21 +80,52 @@ const elBtnAbortResume = document.getElementById('btn-abort-resume');
 const elBtnAbortConfirm = document.getElementById('btn-abort-confirm');
 
 // Benchmark Profiles
-const BENCHMARKS = {
-  'none': { targetQpm: 0, targetAcc: 0 },
-  'standard': { targetQpm: 20, targetAcc: 85 },
-  'top-tier': { targetQpm: 28, targetAcc: 90 },
-  'elite': { targetQpm: 34, targetAcc: 95 }
-};
+function getBatteryBenchmark(battery, tier) {
+  if (tier === 'none') return { targetQpm: 0, targetAcc: 0 };
+  const batteryKey = battery || selectedBattery || BATTERIES.NUMBER_SPEED;
+  const batterySpecs = BATTERY_BENCHMARKS[batteryKey] || BATTERY_BENCHMARKS[BATTERIES.NUMBER_SPEED];
+  return batterySpecs[tier] || { targetQpm: 0, targetAcc: 0 };
+}
 
-function getActiveBenchmark() {
+function getActiveBenchmark(battery = selectedBattery) {
   const val = elTargetBenchmarkSelect ? elTargetBenchmarkSelect.value : 'none';
   if (val === 'custom') {
     const customQpm = parseInt(elCustomQpmInput?.value, 10) || 28;
     return { tier: 'custom', targetQpm: customQpm, targetAcc: 85 };
   }
-  const preset = BENCHMARKS[val] || BENCHMARKS.none;
+  const batteryKey = battery || selectedBattery || BATTERIES.NUMBER_SPEED;
+  const preset = getBatteryBenchmark(batteryKey, val);
   return { tier: val, ...preset };
+}
+
+/**
+ * Updates the benchmark dropdown options dynamically to reflect the active battery's targets.
+ */
+function updateBenchmarkOptions() {
+  if (!elTargetBenchmarkSelect) return;
+  const t = I18N[currentLang] || I18N.en;
+  const currentTargetVal = elTargetBenchmarkSelect.value || 'none';
+  const batteryKey = selectedBattery || BATTERIES.NUMBER_SPEED;
+  const benchmarksForBattery = BATTERY_BENCHMARKS[batteryKey] || BATTERY_BENCHMARKS[BATTERIES.NUMBER_SPEED];
+
+  if (elTargetBenchmarkLabel && t.setup && t.setup.targetLabel) {
+    elTargetBenchmarkLabel.textContent = t.setup.targetLabel;
+  }
+
+  elTargetBenchmarkSelect.innerHTML = '';
+  const tiers = ['none', 'standard', 'top-tier', 'elite', 'custom'];
+  tiers.forEach((tier) => {
+    const opt = document.createElement('option');
+    opt.value = tier;
+    const spec = benchmarksForBattery[tier];
+    const qpm = spec ? spec.targetQpm : 0;
+    const acc = spec ? spec.targetAcc : 0;
+    opt.textContent = t.setup && t.setup.targetOptionLabel
+      ? t.setup.targetOptionLabel(tier, qpm, acc)
+      : (tier === 'none' ? 'No Target' : `${tier} (${qpm} QPM)`);
+    if (tier === currentTargetVal) opt.selected = true;
+    elTargetBenchmarkSelect.appendChild(opt);
+  });
 }
 
 // State
@@ -158,20 +189,7 @@ function setLanguage(lang) {
   }
 
   // Re-populate target benchmark options while preserving selected value
-  if (elTargetBenchmarkLabel && t.setup.targetLabel) {
-    elTargetBenchmarkLabel.textContent = t.setup.targetLabel;
-  }
-  if (elTargetBenchmarkSelect && t.setup.targets) {
-    const currentTargetVal = elTargetBenchmarkSelect.value || 'none';
-    elTargetBenchmarkSelect.innerHTML = '';
-    t.setup.targets.forEach((tg) => {
-      const opt = document.createElement('option');
-      opt.value = tg.value;
-      opt.textContent = tg.label;
-      if (tg.value === currentTargetVal) opt.selected = true;
-      elTargetBenchmarkSelect.appendChild(opt);
-    });
-  }
+  updateBenchmarkOptions();
   if (elCustomQpmLabel && t.setup.customQpmLabel) {
     elCustomQpmLabel.textContent = t.setup.customQpmLabel;
   }
@@ -232,6 +250,7 @@ function renderBatteryCards() {
       card.classList.add('selected');
       selectedBattery = key;
       updateSetupHint();
+      updateBenchmarkOptions();
     });
 
     elBatteryGrid.appendChild(card);
@@ -503,7 +522,7 @@ function renderSummaryReport(summary) {
   const batteryDisplayName = activeBatteryInfo ? activeBatteryInfo.name : battery;
 
   // Evaluate Benchmark Target
-  const bench = getActiveBenchmark();
+  const bench = getActiveBenchmark(battery);
   const targetMet = bench && bench.targetQpm > 0 ? (stats.throughputQpm >= bench.targetQpm && stats.accuracy >= bench.targetAcc) : false;
 
   // Persist session result to localStorage and determine if it's a new PB
