@@ -181,9 +181,9 @@ export class QuestionRenderer {
     const pairs = question.data.pairs;
     const cards = pairs.map((pair, index) => `
       <div class="letter-pair-box" data-index="${index}">
-        <div class="letter-cell top-letter">${pair.top}</div>
+        <div class="letter-cell top-letter" style="font-family: Arial, Helvetica, sans-serif !important;">${pair.top}</div>
         <div class="letter-divider"></div>
-        <div class="letter-cell bottom-letter">${pair.bottom}</div>
+        <div class="letter-cell bottom-letter" style="font-family: Arial, Helvetica, sans-serif !important;">${pair.bottom}</div>
       </div>
     `).join('');
 
